@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '@/theme/colors';
+import { colors, font } from '@/theme';
 
 export function Spec({ icon, text }: { icon: keyof typeof Ionicons.glyphMap; text: string }) {
   return (
@@ -13,5 +13,5 @@ export function Spec({ icon, text }: { icon: keyof typeof Ionicons.glyphMap; tex
 
 const s = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  text: { fontSize: 13, color: colors.textMuted, fontWeight: '600' },
+  text: { fontSize: 13, color: colors.textMuted, fontFamily: font.semibold },
 });

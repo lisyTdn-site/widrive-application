@@ -8,7 +8,7 @@ import { PaySheet } from '@/components/PaySheet';
 import { chauffeurs, type Chauffeur } from '@/data/catalog';
 import { money } from '@/lib/wallet';
 import { useI18n, type Key } from '@/i18n';
-import { colors } from '@/theme/colors';
+import { colors, font } from '@/theme';
 
 const DURATIONS = ['half', 'full'] as const;
 type Dur = (typeof DURATIONS)[number];
@@ -36,7 +36,7 @@ export default function Chauffeurs() {
             <View style={{ flex: 1, gap: 4 }}>
               <Text style={s.name}>{c.name}</Text>
               <View style={s.rate}>
-                <Ionicons name="star" size={14} color="#F5A623" />
+                <Ionicons name="star" size={14} color={colors.gold} />
                 <Text style={s.rateText}>{c.rating} · {t('drv.exp', { n: c.years })}</Text>
               </View>
               <Text style={s.meta}>{c.langs.map((l) => t(`lang.${l}` as Key)).join(' · ')}</Text>
@@ -63,16 +63,16 @@ export default function Chauffeurs() {
 }
 
 const s = StyleSheet.create({
-  info: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#E8F5EE', padding: 12, borderRadius: 14 },
-  infoText: { color: colors.success, fontWeight: '700', fontSize: 13, flex: 1 },
-  card: { flexDirection: 'row', gap: 14, backgroundColor: '#fff', borderRadius: 20, padding: 12 },
+  info: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.successTint, padding: 12, borderRadius: 14 },
+  infoText: { color: colors.success, fontFamily: font.bold, fontSize: 13, flex: 1 },
+  card: { flexDirection: 'row', gap: 14, backgroundColor: colors.surface, borderRadius: 20, padding: 12 },
   photo: { width: 92, height: 92, borderRadius: 18 },
-  name: { fontSize: 17, fontWeight: '800', color: colors.primary },
+  name: { fontSize: 17, fontFamily: font.extrabold, color: colors.primary },
   rate: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  rateText: { fontSize: 13, fontWeight: '700', color: colors.primary },
+  rateText: { fontSize: 13, fontFamily: font.bold, color: colors.primary },
   meta: { fontSize: 13, color: colors.textMuted },
   footer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 },
-  price: { fontSize: 16, fontWeight: '800', color: colors.primary },
+  price: { fontSize: 16, fontFamily: font.extrabold, color: colors.primary },
   btn: { backgroundColor: colors.accent, paddingHorizontal: 18, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
-  btnText: { color: '#fff', fontWeight: '800', fontSize: 13 },
+  btnText: { color: colors.white, fontFamily: font.extrabold, fontSize: 13 },
 });

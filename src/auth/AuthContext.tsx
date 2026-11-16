@@ -84,7 +84,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       [i.phone]: { firstName: i.firstName, lastName: i.lastName, email: i.email, country: i.country, pin: i.pin },
     });
     persistRemember(remember ? { phone: i.phone, country: i.country } : null);
-    setPhone(i.phone);
+    // Volontairement : on ne connecte pas automatiquement l'utilisateur.
+    // Il est renvoyé vers la page de connexion pour saisir à nouveau son code PIN
+    // (objectif : mémorisation du code PIN).
     return { ok: true };
   };
 

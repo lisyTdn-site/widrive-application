@@ -7,6 +7,13 @@ const p = (seed: string, w = 800, h = 560): ImageSourcePropType => ({
   uri: `https://picsum.photos/seed/${seed}/${w}/${h}`,
 });
 
+/** Fabrique une photo à partir d'une graine (utile pour les galeries). */
+export const photo = p;
+
+/** Fabrique une galerie de photos à partir d'une liste de graines. */
+export const photoSet = (seeds: string[], w = 1000, h = 700): ImageSourcePropType[] =>
+  seeds.map((seed) => p(seed, w, h));
+
 export const images = {
   rentals: {
     yaris: p('wid-yaris'),

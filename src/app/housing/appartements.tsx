@@ -9,7 +9,7 @@ import { PaySheet } from '@/components/PaySheet';
 import { apartments, SUPPORT_WHATSAPP, type Apartment } from '@/data/catalog';
 import { money } from '@/lib/wallet';
 import { useI18n, type Key } from '@/i18n';
-import { colors } from '@/theme/colors';
+import { colors, font } from '@/theme';
 
 const TYPES = ['all', 'studio', 'two', 'three', 'villa'] as const;
 type TypeF = (typeof TYPES)[number];
@@ -58,7 +58,7 @@ export default function Appartements() {
             <ScrollView contentContainerStyle={{ paddingBottom: 130 }}>
               <Img source={detail.image} style={{ width: '100%', height: 280 }} />
               <Pressable onPress={() => setDetail(null)} style={s.close} accessibilityLabel={t('common.close')}>
-                <Ionicons name="close" size={22} color="#fff" />
+                <Ionicons name="close" size={22} color={colors.white} />
               </Pressable>
               <View style={{ padding: 18, gap: 10 }}>
                 <Text style={s.dTitle}>{tr(detail.title)}</Text>
@@ -103,23 +103,23 @@ export default function Appartements() {
 }
 
 const s = StyleSheet.create({
-  card: { backgroundColor: '#fff', borderRadius: 20, overflow: 'hidden' },
+  card: { backgroundColor: colors.surface, borderRadius: 20, overflow: 'hidden' },
   img: { width: '100%', height: 190 },
   body: { padding: 14, gap: 8 },
-  title: { fontSize: 18, fontWeight: '800', color: colors.primary },
+  title: { fontSize: 18, fontFamily: font.extrabold, color: colors.primary },
   loc: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  area: { fontSize: 14, color: colors.textMuted, fontWeight: '600' },
+  area: { fontSize: 14, color: colors.textMuted, fontFamily: font.semibold },
   specs: { flexDirection: 'row', gap: 14 },
-  price: { fontSize: 18, fontWeight: '800', color: colors.primary },
-  per: { fontSize: 13, color: colors.textMuted, fontWeight: '600' },
+  price: { fontSize: 18, fontFamily: font.extrabold, color: colors.primary },
+  per: { fontSize: 13, color: colors.textMuted, fontFamily: font.semibold },
   close: { position: 'absolute', top: 50, left: 16, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.55)', alignItems: 'center', justifyContent: 'center' },
-  dTitle: { fontSize: 24, fontWeight: '800', color: colors.primary },
+  dTitle: { fontSize: 24, fontFamily: font.extrabold, color: colors.primary },
   dText: { fontSize: 15, lineHeight: 22, color: colors.primary },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  tag: { backgroundColor: '#fff', borderWidth: 1, borderColor: colors.border, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14 },
-  tagText: { fontSize: 13, fontWeight: '700', color: colors.primary },
-  bar: { position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: '#fff', padding: 16, paddingBottom: 30, gap: 10, borderTopWidth: 1, borderColor: colors.border },
+  tag: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14 },
+  tagText: { fontSize: 13, fontFamily: font.bold, color: colors.primary },
+  bar: { position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.surface, padding: 16, paddingBottom: 30, gap: 10, borderTopWidth: 1, borderColor: colors.border },
   btn: { flex: 1, height: 52, borderRadius: 26, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
-  btnLight: { backgroundColor: '#fff', borderWidth: 2, borderColor: colors.border },
-  btnText: { color: '#fff', fontWeight: '800', fontSize: 14 },
+  btnLight: { backgroundColor: colors.surface, borderWidth: 2, borderColor: colors.border },
+  btnText: { color: colors.white, fontFamily: font.extrabold, fontSize: 14 },
 });

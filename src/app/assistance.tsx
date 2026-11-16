@@ -1,7 +1,7 @@
-import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/Screen';
-import { colors } from '@/theme/colors';
+import { colors, font } from '@/theme';
 import { useI18n, type Key } from '@/i18n';
 
 const helpItems = [
@@ -42,7 +42,7 @@ export default function Assistance() {
       <ScrollView contentContainerStyle={s.container}>
         <View style={s.hero}>
           <View style={s.heroIcon}>
-            <Ionicons name="headset-outline" size={38} color="#FFFFFF" />
+            <Ionicons name="headset-outline" size={38} color={colors.white} />
           </View>
           <Text style={s.heroTitle}>{t('support.heroTitle')}</Text>
           <Text style={s.heroText}>
@@ -72,7 +72,7 @@ export default function Assistance() {
           </Text>
 
           <Pressable style={s.button} onPress={contact}>
-            <Ionicons name="chatbubble-ellipses-outline" size={19} color="#FFFFFF" />
+            <Ionicons name="chatbubble-ellipses-outline" size={19} color={colors.white} />
             <Text style={s.buttonText}>{t('support.contact')}</Text>
           </Pressable>
         </View>
@@ -103,17 +103,17 @@ const s = StyleSheet.create({
   },
   heroTitle: {
     fontSize: 22,
-    fontWeight: '900',
-    color: '#FFFFFF',
+    fontFamily: font.extrabold,
+    color: colors.white,
   },
   heroText: {
-    color: '#E3E5E8',
+    color: colors.onDark,
     lineHeight: 22,
     fontSize: 14,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '800',
+    fontFamily: font.extrabold,
     color: colors.primary,
     marginTop: 8,
   },
@@ -138,7 +138,7 @@ const s = StyleSheet.create({
   itemTitle: {
     color: colors.primary,
     fontSize: 14,
-    fontWeight: '800',
+    fontFamily: font.extrabold,
   },
   itemDescription: {
     color: colors.textMuted,
@@ -158,7 +158,7 @@ const s = StyleSheet.create({
   contactTitle: {
     color: colors.primary,
     fontSize: 17,
-    fontWeight: '800',
+    fontFamily: font.extrabold,
   },
   contactText: {
     color: colors.textMuted,
@@ -176,7 +176,7 @@ const s = StyleSheet.create({
     marginTop: 8,
   },
   buttonText: {
-    color: '#FFFFFF',
-    fontWeight: '800',
+    color: colors.white,
+    fontFamily: font.extrabold,
   },
 });

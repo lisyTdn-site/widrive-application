@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '@/theme/colors';
+import { colors, font } from '@/theme';
 import { useI18n } from '@/i18n';
 
 export function ModuleError({
@@ -59,7 +59,7 @@ const s = StyleSheet.create({
   },
   title: {
     fontSize: 21,
-    fontWeight: '900',
+    fontFamily: font.extrabold,
     color: colors.primary,
     textAlign: 'center',
   },
@@ -77,14 +77,14 @@ const s = StyleSheet.create({
     marginTop: 8,
   },
   retryText: {
-    color: '#FFFFFF',
-    fontWeight: '800',
+    color: colors.white,
+    fontFamily: font.extrabold,
   },
   back: {
     padding: 12,
   },
   backText: {
     color: colors.primary,
-    fontWeight: '700',
+    fontFamily: font.bold,
   },
 });

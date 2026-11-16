@@ -7,7 +7,7 @@ import { PaySheet } from '@/components/PaySheet';
 import { images } from '@/data/images';
 import { fmt, money } from '@/lib/wallet';
 import { useI18n } from '@/i18n';
-import { colors } from '@/theme/colors';
+import { colors, font } from '@/theme';
 
 const CARD_FEE = 2000; // frais de création : à définir
 const TOPUPS = [5000, 10000, 25000, 50000];
@@ -54,7 +54,7 @@ export default function Cartes() {
               <View style={s.cardTop}>
                 <Text style={s.brand}>WIDRIVE</Text>
                 <Pressable onPress={() => update(c.id, { shown: !c.shown })} hitSlop={10}>
-                  <Ionicons name={c.shown ? 'eye-off-outline' : 'eye-outline'} size={22} color="#fff" />
+                  <Ionicons name={c.shown ? 'eye-off-outline' : 'eye-outline'} size={22} color={colors.white} />
                 </Pressable>
               </View>
               <Text style={s.number}>{show(c)}</Text>
@@ -83,7 +83,7 @@ export default function Cartes() {
               <View style={s.chips}>
                 {TOPUPS.map((x) => (
                   <Pressable key={x} onPress={() => setTopup(x)} style={[s.chip, topup === x && s.chipOn]}>
-                    <Text style={[s.chipText, topup === x && { color: '#fff' }]}>{fmt(x)}</Text>
+                    <Text style={[s.chipText, topup === x && { color: colors.white }]}>{fmt(x)}</Text>
                   </Pressable>
                 ))}
               </View>
@@ -110,22 +110,22 @@ const s = StyleSheet.create({
   hero: { width: '100%', height: 130, borderRadius: 20 },
   card: { backgroundColor: colors.primary, borderRadius: 22, padding: 20, gap: 22, borderWidth: 2, borderColor: colors.accent },
   cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  brand: { color: '#fff', fontSize: 18, fontWeight: '800', letterSpacing: 2 },
-  number: { color: '#fff', fontSize: 21, fontWeight: '700', letterSpacing: 2 },
+  brand: { color: colors.white, fontSize: 18, fontFamily: font.extrabold, letterSpacing: 2 },
+  number: { color: colors.white, fontSize: 21, fontFamily: font.bold, letterSpacing: 2 },
   cardBottom: { flexDirection: 'row', justifyContent: 'space-between' },
   small: { color: colors.onDark, fontSize: 11 },
-  val: { color: '#fff', fontSize: 14, fontWeight: '800' },
-  panel: { backgroundColor: '#fff', borderRadius: 18, padding: 14, gap: 10 },
+  val: { color: colors.white, fontSize: 14, fontFamily: font.extrabold },
+  panel: { backgroundColor: colors.surface, borderRadius: 18, padding: 14, gap: 10 },
   rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  panelTitle: { fontSize: 15, fontWeight: '800', color: colors.primary },
-  panelLabel: { fontSize: 13, fontWeight: '700', color: colors.textMuted },
+  panelTitle: { fontSize: 15, fontFamily: font.extrabold, color: colors.primary },
+  panelLabel: { fontSize: 13, fontFamily: font.bold, color: colors.textMuted },
   chips: { flexDirection: 'row', gap: 8 },
   chip: { flex: 1, height: 40, borderRadius: 12, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
   chipOn: { backgroundColor: colors.primary, borderColor: colors.primary },
-  chipText: { fontSize: 13, fontWeight: '800', color: colors.primary },
+  chipText: { fontSize: 13, fontFamily: font.extrabold, color: colors.primary },
   cta: { height: 52, borderRadius: 26, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
-  ctaText: { color: '#fff', fontWeight: '800', fontSize: 14, letterSpacing: 0.5 },
+  ctaText: { color: colors.white, fontFamily: font.extrabold, fontSize: 14, letterSpacing: 0.5 },
   add: { flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center', height: 54, borderRadius: 16, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.primary },
-  addText: { fontWeight: '800', color: colors.primary, fontSize: 14 },
+  addText: { fontFamily: font.extrabold, color: colors.primary, fontSize: 14 },
   note: { fontSize: 12, color: colors.textMuted, textAlign: 'center' },
 });

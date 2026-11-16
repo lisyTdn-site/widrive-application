@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Screen } from '@/components/Screen';
-import { colors } from '@/theme/colors';
+import { colors, font } from '@/theme';
 import { useI18n } from '@/i18n';
 
 type Props = {
@@ -67,7 +67,7 @@ const s = StyleSheet.create({
   },
   title: {
     fontSize: 23,
-    fontWeight: '800',
+    fontFamily: font.extrabold,
     color: colors.primary,
     textAlign: 'center',
   },
@@ -85,7 +85,7 @@ const s = StyleSheet.create({
     marginTop: 12,
   },
   buttonText: {
-    color: '#FFFFFF',
-    fontWeight: '800',
+    color: colors.white,
+    fontFamily: font.extrabold,
   },
 });

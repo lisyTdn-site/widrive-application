@@ -3,8 +3,8 @@ import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { colors } from '../theme/colors';
-import { useI18n, type Key } from '@/i18n';
+import { useI18n } from '@/i18n';
+import { colors, font } from '@/theme';
 
 const steps = ['trip.step1', 'trip.step2', 'trip.step3'] as const;
 const titles = ['trip.title1', 'trip.title2', 'trip.title3'] as const;
@@ -49,9 +49,9 @@ export default function Trip() {
             return (
               <View key={label} style={s.step}>
                 <View style={[s.stepDot, done && { backgroundColor: colors.success }, current && s.stepDotCurrent]}>
-                  {done && <Ionicons name="checkmark" size={16} color="#fff" />}
+                  {done && <Ionicons name="checkmark" size={16} color={colors.white} />}
                 </View>
-                <Text style={[s.stepLabel, current && { fontWeight: '800', color: colors.primary }]}>{t(label)}</Text>
+                <Text style={[s.stepLabel, current && { fontFamily: font.extrabold, color: colors.primary }]}>{t(label)}</Text>
               </View>
             );
           })}
@@ -64,7 +64,7 @@ export default function Trip() {
             <Text style={s.small}>{t('trip.vehicle')}</Text>
           </View>
           <Pressable accessibilityRole="button" accessibilityLabel={t('trip.call')} style={s.call}>
-            <Ionicons name="call-outline" size={20} color="#fff" />
+            <Ionicons name="call-outline" size={20} color={colors.white} />
           </Pressable>
         </View>
 
@@ -86,14 +86,14 @@ export default function Trip() {
 }
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#E1E3E6' },
+  screen: { flex: 1, backgroundColor: colors.border },
   map: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6 },
-  mapText: { color: colors.textMuted, fontSize: 14, fontWeight: '600' },
+  mapText: { color: colors.textMuted, fontSize: 14, fontFamily: font.semibold },
   sheet: { backgroundColor: colors.surface, borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 20, gap: 14 },
   titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
-  title: { flex: 1, fontSize: 20, fontWeight: '800', color: colors.primary },
+  title: { flex: 1, fontSize: 20, fontFamily: font.extrabold, color: colors.primary },
   eta: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14, backgroundColor: colors.accent },
-  etaText: { color: '#fff', fontSize: 13, fontWeight: '800' },
+  etaText: { color: colors.white, fontSize: 13, fontFamily: font.extrabold },
   steps: { flexDirection: 'row', justifyContent: 'space-between' },
   step: { flex: 1, alignItems: 'center', gap: 6 },
   stepDot: {
@@ -107,11 +107,11 @@ const s = StyleSheet.create({
     width: 52, height: 52, borderRadius: 26, backgroundColor: colors.surface,
     borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center',
   },
-  driverName: { fontSize: 15, fontWeight: '800', color: colors.primary },
+  driverName: { fontSize: 15, fontFamily: font.extrabold, color: colors.primary },
   small: { fontSize: 12, color: colors.textMuted },
   call: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   summary: { borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: 14 },
-  value: { fontSize: 14, fontWeight: '700', color: colors.primary },
+  value: { fontSize: 14, fontFamily: font.bold, color: colors.primary },
   cancel: { height: 52, borderRadius: 16, borderWidth: 2, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
-  cancelText: { fontSize: 15, fontWeight: '700', color: colors.primary },
+  cancelText: { fontSize: 15, fontFamily: font.bold, color: colors.primary },
 });

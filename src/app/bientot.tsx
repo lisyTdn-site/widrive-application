@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { Screen } from '@/components/Screen';
-import { colors } from '@/theme/colors';
+import { colors, font } from '@/theme';
 import { useI18n } from '@/i18n';
 
 export default function Bientot() {
@@ -24,7 +24,7 @@ export default function Bientot() {
             <Ionicons
               name="rocket-outline"
               size={64}
-              color="#A83245"
+              color={colors.accent}
             />
           </View>
 
@@ -32,7 +32,7 @@ export default function Bientot() {
             <Ionicons
               name="construct-outline"
               size={23}
-              color="#A83245"
+              color={colors.accent}
             />
           </View>
 
@@ -40,7 +40,7 @@ export default function Bientot() {
             <Ionicons
               name="sparkles-outline"
               size={21}
-              color="#A83245"
+              color={colors.accent}
             />
           </View>
 
@@ -51,12 +51,12 @@ export default function Bientot() {
           <View style={s.badge}>
             <View style={s.badgeDot} />
             <Text style={s.badgeText}>
-              EN DÉVELOPPEMENT
+              {t('soon.badge')}
             </Text>
           </View>
 
           <Text style={s.title}>
-            Quelque chose se prépare !
+            {t('soon.headline')}
           </Text>
 
           <Text style={s.description}>
@@ -64,8 +64,7 @@ export default function Bientot() {
           </Text>
 
           <Text style={s.extra}>
-            Nous travaillons pour vous proposer une expérience
-            WIDRIVE toujours plus complète.
+            {t('soon.extra')}
           </Text>
 
         </View>
@@ -75,11 +74,11 @@ export default function Bientot() {
             <Ionicons
               name="rocket-outline"
               size={19}
-              color="#A83245"
+              color={colors.accent}
             />
 
             <Text style={s.progressTitle}>
-              Notre équipe y travaille
+              {t('soon.progressTitle')}
             </Text>
           </View>
 
@@ -88,18 +87,19 @@ export default function Bientot() {
           </View>
 
           <Text style={s.progressCaption}>
-            De nouveaux services arrivent progressivement.
+            {t('soon.progressCaption')}
           </Text>
         </View>
 
         <Pressable
           onPress={() => router.back()}
           style={s.button}
+          accessibilityRole="button"
         >
           <Ionicons
             name="arrow-back"
             size={18}
-            color="#FFFFFF"
+            color={colors.white}
           />
 
           <Text style={s.buttonText}>
@@ -108,7 +108,7 @@ export default function Bientot() {
         </Pressable>
 
         <Text style={s.footer}>
-          WIDRIVE AFRICA · VOTRE VISION, NOTRE MOUVEMENT.
+          {t('soon.footer')}
         </Text>
 
       </View>
@@ -119,7 +119,7 @@ export default function Bientot() {
 const s = StyleSheet.create({
   page: {
     flex: 1,
-    backgroundColor: '#F4F3F2',
+    backgroundColor: colors.background,
     padding: 23,
     alignItems: 'center',
     justifyContent: 'center',
@@ -138,7 +138,7 @@ const s = StyleSheet.create({
     width: 175,
     height: 175,
     borderRadius: 90,
-    backgroundColor: '#F7EAED',
+    backgroundColor: colors.accentTint,
   },
 
   circleSmall: {
@@ -146,14 +146,14 @@ const s = StyleSheet.create({
     width: 130,
     height: 130,
     borderRadius: 70,
-    backgroundColor: '#F0DDE1',
+    backgroundColor: colors.accentTint,
   },
 
   mainIcon: {
     width: 105,
     height: 105,
     borderRadius: 34,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 4,
@@ -166,7 +166,7 @@ const s = StyleSheet.create({
     width: 47,
     height: 47,
     borderRadius: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -178,7 +178,7 @@ const s = StyleSheet.create({
     width: 43,
     height: 43,
     borderRadius: 15,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -192,7 +192,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 7,
-    backgroundColor: '#F7EAED',
+    backgroundColor: colors.accentTint,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
@@ -202,32 +202,32 @@ const s = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 5,
-    backgroundColor: '#A83245',
+    backgroundColor: colors.accent,
   },
 
   badgeText: {
-    color: '#A83245',
+    color: colors.accent,
     fontSize: 9,
-    fontWeight: '900',
+    fontFamily: font.extrabold,
     letterSpacing: 1,
   },
 
   title: {
-    color: '#292D32',
+    color: colors.primary,
     fontSize: 23,
-    fontWeight: '900',
+    fontFamily: font.extrabold,
     textAlign: 'center',
   },
 
   description: {
-    color: '#555B63',
+    color: colors.textMuted,
     fontSize: 14,
     lineHeight: 22,
     textAlign: 'center',
   },
 
   extra: {
-    color: '#747982',
+    color: colors.textMuted,
     fontSize: 12,
     lineHeight: 20,
     textAlign: 'center',
@@ -236,7 +236,7 @@ const s = StyleSheet.create({
 
   progressCard: {
     width: '100%',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderRadius: 17,
     padding: 16,
     marginTop: 25,
@@ -250,27 +250,27 @@ const s = StyleSheet.create({
   },
 
   progressTitle: {
-    color: '#292D32',
+    color: colors.primary,
     fontSize: 12,
-    fontWeight: '800',
+    fontFamily: font.extrabold,
   },
 
   progressTrack: {
     height: 7,
     borderRadius: 10,
-    backgroundColor: '#F0EDEF',
+    backgroundColor: colors.surfaceAlt,
     overflow: 'hidden',
   },
 
   progressFill: {
     width: '65%',
     height: '100%',
-    backgroundColor: '#A83245',
+    backgroundColor: colors.accent,
     borderRadius: 10,
   },
 
   progressCaption: {
-    color: '#747982',
+    color: colors.textMuted,
     fontSize: 10,
   },
 
@@ -278,7 +278,7 @@ const s = StyleSheet.create({
     width: '100%',
     height: 54,
     borderRadius: 16,
-    backgroundColor: '#A83245',
+    backgroundColor: colors.accent,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -287,15 +287,15 @@ const s = StyleSheet.create({
   },
 
   buttonText: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontSize: 14,
-    fontWeight: '900',
+    fontFamily: font.extrabold,
   },
 
   footer: {
-    color: '#A0A4AA',
+    color: colors.textMuted,
     fontSize: 8,
-    fontWeight: '800',
+    fontFamily: font.extrabold,
     letterSpacing: 1,
     textAlign: 'center',
     marginTop: 25,

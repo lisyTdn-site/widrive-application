@@ -1,5 +1,5 @@
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
-import { colors } from '@/theme/colors';
+import { colors, font } from '@/theme';
 
 export function Chips<T extends string>({
   items, value, onChange, label,
@@ -17,8 +17,8 @@ export function Chips<T extends string>({
 
 const s = StyleSheet.create({
   row: { gap: 8, paddingHorizontal: 16, paddingVertical: 12 },
-  chip: { height: 38, paddingHorizontal: 16, borderRadius: 19, backgroundColor: '#fff', borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
+  chip: { height: 38, paddingHorizontal: 16, borderRadius: 19, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
   on: { backgroundColor: colors.primary, borderColor: colors.primary },
-  text: { fontSize: 14, fontWeight: '700', color: colors.primary },
-  textOn: { color: '#fff' },
+  text: { fontSize: 14, fontFamily: font.bold, color: colors.primary },
+  textOn: { color: colors.white },
 });

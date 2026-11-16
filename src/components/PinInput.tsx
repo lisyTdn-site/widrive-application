@@ -7,7 +7,7 @@ import {
   View,
 } from 'react-native';
 
-import { colors } from '@/theme/colors';
+import { colors, font } from '@/theme';
 
 type PinInputProps = {
   label: string;
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
 
   label: {
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: font.bold,
     color: colors.textMuted,
     marginBottom: 6,
   },
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 56,
     borderRadius: 14,
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderWidth: 1.5,
     borderColor: colors.border,
     alignItems: 'center',

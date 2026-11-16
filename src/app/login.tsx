@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
-import { colors } from '@/theme/colors';
+import { colors, font } from '@/theme';
 import { useAuth, type AuthError } from '@/auth/AuthContext';
 import { useI18n, type Key } from '@/i18n';
 import { LangSwitch } from '@/components/LangSwitch';
@@ -124,7 +124,12 @@ export default function Login() {
       if (!r.ok) {
         fail(errText(r.error));
         setStep('form');
+        return;
       }
+      // Compte créé : on renvoie l'utilisateur vers la connexion pour qu'il
+      // ressaisisse son code PIN et le mémorise.
+      changeMode('login');
+      setInfo(t('auth.accountCreated'));
     } else {
       const r = await resetPin(full, pin);
       setBusy(false);
@@ -171,7 +176,12 @@ export default function Login() {
   );
 
   const cta = (label: string, onPress: () => void) => (
-    <Pressable disabled={busy} onPress={onPress} style={[s.cta, busy && { opacity: 0.6 }]}>
+    <Pressable
+      disabled={busy}
+      onPress={onPress}
+      accessibilityRole="button"
+      style={({ pressed }) => [s.cta, (busy || pressed) && s.pressed]}
+    >
       <Text style={s.ctaText}>{label}</Text>
     </Pressable>
   );
@@ -183,8 +193,13 @@ export default function Login() {
         <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
           <View style={s.header}>
             <View style={s.headerTop}>
-              <Pressable onPress={() => router.back()} style={s.back} accessibilityLabel={t('common.back')}>
-                <Ionicons name="chevron-back" size={22} color="#fff" />
+              <Pressable
+                onPress={() => router.back()}
+                style={({ pressed }) => [s.back, pressed && s.pressed]}
+                accessibilityRole="button"
+                accessibilityLabel={t('common.back')}
+              >
+                <Ionicons name="chevron-back" size={22} color={colors.white} />
               </Pressable>
               <LangSwitch dark />
             </View>
@@ -199,7 +214,12 @@ export default function Login() {
             {mode !== 'reset' && step === 'form' ? (
               <View style={s.tabs}>
                 {(['login', 'register'] as const).map((m) => (
-                  <Pressable key={m} onPress={() => changeMode(m)} style={[s.tab, mode === m && s.tabOn]}>
+                  <Pressable
+                    key={m}
+                    onPress={() => changeMode(m)}
+                    accessibilityRole="button"
+                    style={({ pressed }) => [s.tab, mode === m && s.tabOn, pressed && s.pressed]}
+                  >
                     <Text style={[s.tabText, mode === m && s.tabTextOn]}>
                       {m === 'login' ? t('auth.tabLogin') : t('auth.tabRegister')}
                     </Text>
@@ -333,36 +353,37 @@ const s = StyleSheet.create({
   header: { alignItems: 'center', paddingTop: 8, paddingBottom: 24, paddingHorizontal: 16, gap: 6 },
   headerTop: { alignSelf: 'stretch', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
   back: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
-  logoPill: { backgroundColor: '#fff', borderRadius: 22, paddingHorizontal: 16, paddingVertical: 8, marginBottom: 10 },
+  logoPill: { backgroundColor: colors.surface, borderRadius: 22, paddingHorizontal: 16, paddingVertical: 8, marginBottom: 10 },
   logo: { width: 150, height: 58 },
-  hello: { fontSize: 24, fontWeight: '800', color: '#fff' },
+  hello: { fontSize: 24, fontFamily: font.extrabold, color: colors.white },
   helloSub: { fontSize: 14, color: colors.onDark },
   card: { flex: 1, backgroundColor: colors.background, borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: 22, gap: 12, minHeight: 460 },
-  tabs: { flexDirection: 'row', backgroundColor: '#E9E9E5', borderRadius: 16, padding: 4 },
+  tabs: { flexDirection: 'row', backgroundColor: colors.surfaceAlt, borderRadius: 16, padding: 4 },
   tab: { flex: 1, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   tabOn: { backgroundColor: colors.primary },
-  tabText: { fontSize: 15, fontWeight: '800', color: colors.textMuted },
-  tabTextOn: { color: '#fff' },
-  label: { fontSize: 13, fontWeight: '700', color: colors.textMuted },
-  input: { height: 52, borderRadius: 14, backgroundColor: '#fff', borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14, fontSize: 16, color: colors.primary },
+  tabText: { fontSize: 15, fontFamily: font.extrabold, color: colors.textMuted },
+  tabTextOn: { color: colors.white },
+  label: { fontSize: 13, fontFamily: font.bold, color: colors.textMuted },
+  input: { height: 52, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14, fontSize: 16, color: colors.primary },
   phoneRow: { flexDirection: 'row', gap: 8 },
-  prefix: { height: 52, paddingHorizontal: 12, borderRadius: 14, backgroundColor: '#fff', borderWidth: 1, borderColor: colors.border, flexDirection: 'row', alignItems: 'center', gap: 4 },
-  prefixText: { fontSize: 16, fontWeight: '800', color: colors.primary },
-  error: { color: colors.accent, fontSize: 13, fontWeight: '700' },
-  info: { color: colors.success, fontSize: 13, fontWeight: '700' },
-  forgot: { color: colors.accent, fontSize: 13, fontWeight: '700', textAlign: 'right' },
+  prefix: { height: 52, paddingHorizontal: 12, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, flexDirection: 'row', alignItems: 'center', gap: 4 },
+  prefixText: { fontSize: 16, fontFamily: font.extrabold, color: colors.primary },
+  error: { color: colors.accent, fontSize: 13, fontFamily: font.bold },
+  info: { color: colors.success, fontSize: 13, fontFamily: font.bold },
+  forgot: { color: colors.accent, fontSize: 13, fontFamily: font.bold, textAlign: 'right' },
   checkRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   checkText: { flex: 1, fontSize: 13, color: colors.textMuted, lineHeight: 18 },
   cta: { height: 56, borderRadius: 28, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', marginTop: 4 },
-  ctaText: { color: '#fff', fontSize: 15, fontWeight: '800', letterSpacing: 1 },
+  ctaText: { color: colors.white, fontSize: 15, fontFamily: font.extrabold, letterSpacing: 1 },
   switch: { textAlign: 'center', color: colors.textMuted, fontSize: 14, marginTop: 6 },
-  switchBold: { color: colors.accent, fontWeight: '800' },
-  otpTitle: { fontSize: 20, fontWeight: '800', color: colors.primary },
+  switchBold: { color: colors.accent, fontFamily: font.extrabold },
+  otpTitle: { fontSize: 20, fontFamily: font.extrabold, color: colors.primary },
   otpSub: { fontSize: 14, color: colors.textMuted },
-  otpInput: { textAlign: 'center', fontSize: 26, fontWeight: '800', letterSpacing: 8 },
-  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 24 },
-  sheet: { backgroundColor: '#fff', borderRadius: 20, padding: 18, gap: 4 },
-  sheetTitle: { fontSize: 17, fontWeight: '800', color: colors.primary, marginBottom: 8 },
+  otpInput: { textAlign: 'center', fontSize: 26, fontFamily: font.extrabold, letterSpacing: 8 },
+  overlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'center', padding: 24 },
+  sheet: { backgroundColor: colors.surface, borderRadius: 20, padding: 18, gap: 4 },
+  sheetTitle: { fontSize: 17, fontFamily: font.extrabold, color: colors.primary, marginBottom: 8 },
   countryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12 },
-  countryText: { fontSize: 16, color: colors.primary, fontWeight: '600' },
+  countryText: { fontSize: 16, color: colors.primary, fontFamily: font.semibold },
+  pressed: { opacity: 0.7 },
 });

@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { colors } from '@/theme/colors';
+import { colors, font } from '@/theme';
 import { useI18n, type Key } from '@/i18n';
 
 const BALANCE = 45000; // fictif, à remplacer par l'API
@@ -86,7 +86,7 @@ export default function Ride() {
                 <Ionicons name="car-outline" size={26} color={colors.primary} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={[s.catName, on && { fontWeight: '800' }]}>{c.name}</Text>
+                <Text style={[s.catName, on && { fontFamily: font.extrabold }]}>{c.name}</Text>
                 <Text style={s.small}>{t(c.desc as Key)}</Text>
               </View>
               <View style={{ alignItems: 'flex-end' }}>
@@ -105,8 +105,8 @@ export default function Ride() {
             onPress={() => setPay('wallet')}
             style={[s.pay, pay === 'wallet' && s.payOn]}
           >
-            <Ionicons name="wallet-outline" size={20} color={pay === 'wallet' ? '#fff' : colors.primary} />
-            <Text style={[s.payText, pay === 'wallet' && { color: '#fff' }]}>{t('ride.balance')}</Text>
+            <Ionicons name="wallet-outline" size={20} color={pay === 'wallet' ? colors.white : colors.primary} />
+            <Text style={[s.payText, pay === 'wallet' && { color: colors.white }]}>{t('ride.balance')}</Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
@@ -114,8 +114,8 @@ export default function Ride() {
             onPress={() => setPay('momo')}
             style={[s.pay, pay === 'momo' && s.payOn]}
           >
-            <Ionicons name="phone-portrait-outline" size={20} color={pay === 'momo' ? '#fff' : colors.primary} />
-            <Text style={[s.payText, pay === 'momo' && { color: '#fff' }]}>Mobile Money</Text>
+            <Ionicons name="phone-portrait-outline" size={20} color={pay === 'momo' ? colors.white : colors.primary} />
+            <Text style={[s.payText, pay === 'momo' && { color: colors.white }]}>Mobile Money</Text>
           </Pressable>
         </View>
 
@@ -151,9 +151,9 @@ export default function Ride() {
 }
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#E1E3E6' },
+  screen: { flex: 1, backgroundColor: colors.border },
   map: { height: 190, alignItems: 'center', justifyContent: 'center', gap: 6 },
-  mapText: { color: colors.textMuted, fontSize: 14, fontWeight: '600' },
+  mapText: { color: colors.textMuted, fontSize: 14, fontFamily: font.semibold },
   back: {
     position: 'absolute', top: 12, left: 20, width: 44, height: 44, borderRadius: 22,
     backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border,
@@ -164,33 +164,33 @@ const s = StyleSheet.create({
   small: { fontSize: 12, color: colors.textMuted },
   route: { borderWidth: 1, borderColor: colors.border, borderRadius: 16, overflow: 'hidden' },
   routeRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 8 },
-  routeInput: { fontSize: 15, fontWeight: '700', color: colors.primary, paddingVertical: 2 },
+  routeInput: { fontSize: 15, fontFamily: font.bold, color: colors.primary, paddingVertical: 2 },
   dotFrom: { width: 12, height: 12, borderRadius: 6, borderWidth: 3, borderColor: colors.primary },
   dotTo: { width: 12, height: 12, borderRadius: 3, backgroundColor: colors.accent },
-  section: { fontSize: 16, fontWeight: '800', color: colors.primary, marginTop: 8 },
+  section: { fontSize: 16, fontFamily: font.extrabold, color: colors.primary, marginTop: 8 },
   cat: {
     flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, borderRadius: 16,
     borderWidth: 2, borderColor: colors.border,
   },
   catOn: { borderColor: colors.primary, backgroundColor: colors.background },
-  catIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#EEEEEB', alignItems: 'center', justifyContent: 'center' },
-  catName: { fontSize: 15, fontWeight: '700', color: colors.primary },
-  catPrice: { fontSize: 15, fontWeight: '800', color: colors.primary },
+  catIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: colors.surfaceAlt, alignItems: 'center', justifyContent: 'center' },
+  catName: { fontSize: 15, fontFamily: font.bold, color: colors.primary },
+  catPrice: { fontSize: 15, fontFamily: font.extrabold, color: colors.primary },
   payRow: { flexDirection: 'row', gap: 10 },
   pay: {
     flex: 1, height: 52, borderRadius: 16, flexDirection: 'row', gap: 8,
     alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: colors.border,
   },
   payOn: { backgroundColor: colors.primary, borderColor: colors.primary },
-  payText: { fontSize: 13, fontWeight: '800', color: colors.primary },
+  payText: { fontSize: 13, fontFamily: font.extrabold, color: colors.primary },
   note: { fontSize: 12, color: colors.textMuted, textAlign: 'center' },
   warn: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     padding: 12, borderRadius: 12, backgroundColor: colors.accentTint,
   },
-  warnText: { fontSize: 13, fontWeight: '700', color: colors.primary },
-  warnLink: { fontSize: 14, fontWeight: '800', color: colors.accent, paddingVertical: 6 },
+  warnText: { fontSize: 13, fontFamily: font.bold, color: colors.primary },
+  warnLink: { fontSize: 14, fontFamily: font.extrabold, color: colors.accent, paddingVertical: 6 },
   cta: { height: 56, borderRadius: 18, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
   ctaOff: { opacity: 0.45 },
-  ctaText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  ctaText: { color: colors.white, fontSize: 16, fontFamily: font.extrabold },
 });

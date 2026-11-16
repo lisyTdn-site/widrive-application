@@ -1,7 +1,7 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/Screen';
-import { colors } from '@/theme/colors';
+import { colors, font } from '@/theme';
 import { useI18n } from '@/i18n';
 
 export default function Notifications() {
@@ -61,7 +61,7 @@ const s = StyleSheet.create({
   },
   title: {
     fontSize: 23,
-    fontWeight: '900',
+    fontFamily: font.extrabold,
     color: colors.primary,
   },
   description: {
@@ -90,7 +90,7 @@ const s = StyleSheet.create({
   emptyTitle: {
     color: colors.primary,
     fontSize: 18,
-    fontWeight: '800',
+    fontFamily: font.extrabold,
   },
   emptyText: {
     color: colors.textMuted,
@@ -102,7 +102,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: '#E8F5EE',
+    backgroundColor: colors.successTint,
     padding: 14,
     borderRadius: 15,
   },

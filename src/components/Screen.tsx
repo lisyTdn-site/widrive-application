@@ -6,17 +6,21 @@ import { StatusBar } from 'expo-status-bar';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
-import { colors } from '@/theme/colors';
+import { colors, font } from '@/theme';
+import { useI18n } from '@/i18n';
 
 export function Screen({ title, children }: { title: string; children: ReactNode }) {
+  const { t } = useI18n();
+
   return (
     <SafeAreaView style={styles.root} edges={['top']}>
       <StatusBar style="dark" />
       <View style={styles.header}>
         <Pressable
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/' as never))}
-          style={styles.backButton}
-          accessibilityLabel="Retour"
+          style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
         >
           <MaterialCommunityIcons name="arrow-left" size={21} color={colors.primary} />
         </Pressable>
@@ -50,7 +54,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: { flex: 1, color: colors.primary, fontSize: 19, fontWeight: '800' },
+  title: { flex: 1, color: colors.primary, fontSize: 19, fontFamily: font.extrabold },
   headerSpacer: { width: 42 },
   body: { flex: 1, backgroundColor: colors.background },
+  pressed: { opacity: 0.6 },
 });

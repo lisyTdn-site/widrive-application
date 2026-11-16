@@ -17,16 +17,17 @@ import { StatusBar } from 'expo-status-bar';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
-import { colors } from '@/theme/colors';
+import { colors, font } from '@/theme';
 import { useAuth } from '@/auth/AuthContext';
 import { useI18n } from '@/i18n';
 import { modules } from '@/core/modules';
 import { AdCarousel } from '@/components/AdCarousel';
-import { BALANCE, money } from '@/lib/wallet';
+import { money, useWallet } from '@/lib/wallet';
 
 export default function Home() {
   const { user } = useAuth();
   const { t } = useI18n();
+  const { balance } = useWallet();
 
   const { width } = useWindowDimensions();
 
@@ -91,15 +92,20 @@ export default function Home() {
             </View>
 
             <Pressable
-              style={styles.notification}
+              style={({ pressed }) => [
+                styles.notification,
+                pressed && styles.pressed,
+              ]}
               onPress={() =>
                 router.push('/notifications' as never)
               }
+              accessibilityRole="button"
+              accessibilityLabel={t('notifications.title')}
             >
               <MaterialCommunityIcons
                 name="bell-outline"
                 size={23}
-                color="#FFFFFF"
+                color={colors.white}
               />
               <View style={styles.notificationDot} />
             </Pressable>
@@ -121,7 +127,7 @@ export default function Home() {
                 <MaterialCommunityIcons
                   name="wallet-outline"
                   size={20}
-                  color="#D8B7C0"
+                  color={colors.accentSoft}
                 />
 
                 <Text style={styles.walletLabelText}>
@@ -132,6 +138,8 @@ export default function Home() {
               <Pressable
                 onPress={() => setHidden(!hidden)}
                 hitSlop={12}
+                accessibilityRole="button"
+                accessibilityLabel={t('home.toggleBalance')}
               >
                 <MaterialCommunityIcons
                   name={
@@ -140,13 +148,13 @@ export default function Home() {
                       : 'eye-outline'
                   }
                   size={22}
-                  color="#FFFFFF"
+                  color={colors.white}
                 />
               </Pressable>
             </View>
 
             <Text style={styles.balance}>
-              {hidden ? '••••••••' : money(BALANCE)}
+              {hidden ? '••••••••' : money(balance)}
             </Text>
 
             <Text style={styles.available}>
@@ -157,7 +165,10 @@ export default function Home() {
 
             <View style={styles.walletActions}>
               <Pressable
-                style={styles.walletAction}
+                style={({ pressed }) => [
+                  styles.walletAction,
+                  pressed && styles.pressed,
+                ]}
                 onPress={() =>
                   router.push('/transfer?mode=dep' as never)
                 }
@@ -165,15 +176,18 @@ export default function Home() {
                 <MaterialCommunityIcons
                   name="plus-circle-outline"
                   size={21}
-                  color="#FFFFFF"
+                  color={colors.white}
                 />
-                <Text style={styles.actionText}>{t('hm.deposit')}</Text>
+                <Text style={styles.actionText}>{t('home.deposit')}</Text>
               </Pressable>
 
               <View style={styles.verticalDivider} />
 
               <Pressable
-                style={styles.walletAction}
+                style={({ pressed }) => [
+                  styles.walletAction,
+                  pressed && styles.pressed,
+                ]}
                 onPress={() =>
                   router.push('/transfer?mode=ret' as never)
                 }
@@ -181,15 +195,18 @@ export default function Home() {
                 <MaterialCommunityIcons
                   name="arrow-up-circle-outline"
                   size={21}
-                  color="#FFFFFF"
+                  color={colors.white}
                 />
-                <Text style={styles.actionText}>{t('hm.withdraw')}</Text>
+                <Text style={styles.actionText}>{t('home.withdraw')}</Text>
               </Pressable>
 
               <View style={styles.verticalDivider} />
 
               <Pressable
-                style={styles.walletAction}
+                style={({ pressed }) => [
+                  styles.walletAction,
+                  pressed && styles.pressed,
+                ]}
                 onPress={() =>
                   router.push('/wallet' as never)
                 }
@@ -197,7 +214,7 @@ export default function Home() {
                 <MaterialCommunityIcons
                   name="arrow-right-circle-outline"
                   size={21}
-                  color="#FFFFFF"
+                  color={colors.white}
                 />
                 <Text style={styles.actionText}>{t('home.details')}</Text>
               </Pressable>
@@ -223,7 +240,11 @@ export default function Home() {
           />
 
           {query.length > 0 && (
-            <Pressable onPress={() => setQuery('')}>
+            <Pressable
+              onPress={() => setQuery('')}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.clear')}
+            >
               <MaterialCommunityIcons
                 name="close-circle"
                 size={20}
@@ -264,7 +285,7 @@ export default function Home() {
           <View style={styles.heading}>
             <View>
               <Text style={styles.headingTitle}>
-                {t('hm.services')}
+                {t('home.services')}
               </Text>
               <Text style={styles.headingSub}>
                 {t('home.servicesSub')}
@@ -326,7 +347,7 @@ export default function Home() {
                     <MaterialCommunityIcons
                       name="arrow-right"
                       size={16}
-                      color="#B2AEB0"
+                      color={colors.textMuted}
                     />
                   )}
                 </Pressable>
@@ -345,7 +366,7 @@ export default function Home() {
           </Text>
 
           <Text style={styles.signatureSub}>
-            MOVE SMART. LIVE BETTER.
+            {t('home.moveSmart')}
           </Text>
         </View>
 
@@ -390,20 +411,20 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 13,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
   },
 
   brandName: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontSize: 17,
-    fontWeight: '900',
+    fontFamily: font.extrabold,
     letterSpacing: 2,
   },
 
   brandSub: {
-    color: '#D9B7C0',
+    color: colors.accentSoft,
     fontSize: 10,
-    fontWeight: '800',
+    fontFamily: font.extrabold,
     letterSpacing: 4,
     marginTop: 3,
   },
@@ -412,7 +433,7 @@ const styles = StyleSheet.create({
     width: 46,
     height: 46,
     borderRadius: 16,
-    backgroundColor: '#373D47',
+    backgroundColor: colors.darkSurfaceAlt,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -424,28 +445,28 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#D76B7E',
+    backgroundColor: colors.accent,
   },
 
   welcome: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontSize: 24,
-    fontWeight: '900',
+    fontFamily: font.extrabold,
   },
 
   intro: {
-    color: '#C1C3C9',
+    color: colors.onDarkMuted,
     fontSize: 13,
     marginTop: 6,
     marginBottom: 21,
   },
 
   wallet: {
-    backgroundColor: '#343B46',
+    backgroundColor: colors.darkSurface,
     borderRadius: 24,
     padding: 19,
     borderWidth: 1,
-    borderColor: '#4D5561',
+    borderColor: colors.darkBorder,
   },
 
   walletTop: {
@@ -461,27 +482,27 @@ const styles = StyleSheet.create({
   },
 
   walletLabelText: {
-    color: '#D8B7C0',
+    color: colors.accentSoft,
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: font.bold,
   },
 
   balance: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontSize: 30,
-    fontWeight: '900',
+    fontFamily: font.extrabold,
     marginTop: 17,
   },
 
   available: {
-    color: '#BFC2C8',
+    color: colors.onDarkMuted,
     fontSize: 12,
     marginTop: 5,
   },
 
   walletDivider: {
     height: 1,
-    backgroundColor: '#555D68',
+    backgroundColor: colors.darkBorder,
     marginVertical: 17,
   },
 
@@ -498,15 +519,15 @@ const styles = StyleSheet.create({
   },
 
   actionText: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontSize: 12,
-    fontWeight: '800',
+    fontFamily: font.extrabold,
   },
 
   verticalDivider: {
     height: 23,
     width: 1,
-    backgroundColor: '#626A75',
+    backgroundColor: colors.darkBorder,
   },
 
   search: {
@@ -515,7 +536,7 @@ const styles = StyleSheet.create({
     marginTop: 22,
     marginBottom: 20,
     paddingHorizontal: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderRadius: 17,
     borderWidth: 1,
     borderColor: colors.border,
@@ -545,7 +566,7 @@ const styles = StyleSheet.create({
   headingTitle: {
     color: colors.primary,
     fontSize: 20,
-    fontWeight: '900',
+    fontFamily: font.extrabold,
   },
 
   headingSub: {
@@ -570,7 +591,7 @@ const styles = StyleSheet.create({
   counterText: {
     color: colors.accent,
     fontSize: 13,
-    fontWeight: '900',
+    fontFamily: font.extrabold,
   },
 
   grid: {
@@ -582,7 +603,7 @@ const styles = StyleSheet.create({
 
   serviceCard: {
     minHeight: 142,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderRadius: 21,
     borderWidth: 1,
     borderColor: colors.border,
@@ -591,7 +612,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     elevation: 2,
-    shadowColor: '#20232B',
+    shadowColor: colors.primary,
     shadowOpacity: 0.045,
     shadowRadius: 9,
     shadowOffset: { width: 0, height: 3 },
@@ -607,13 +628,13 @@ const styles = StyleSheet.create({
   },
 
   iconDisabled: {
-    backgroundColor: '#EFEEEC',
+    backgroundColor: colors.surfaceAlt,
   },
 
   serviceTitle: {
     color: colors.primary,
     fontSize: 12,
-    fontWeight: '800',
+    fontFamily: font.extrabold,
     textAlign: 'center',
     lineHeight: 17,
     minHeight: 34,
@@ -622,7 +643,7 @@ const styles = StyleSheet.create({
   soon: {
     color: colors.textMuted,
     fontSize: 9,
-    fontWeight: '900',
+    fontFamily: font.extrabold,
     letterSpacing: 0.6,
   },
 
@@ -642,15 +663,19 @@ const styles = StyleSheet.create({
   signatureText: {
     color: colors.primary,
     fontSize: 12,
-    fontWeight: '900',
+    fontFamily: font.extrabold,
     letterSpacing: 3,
   },
 
   signatureSub: {
     color: colors.textMuted,
     fontSize: 9,
-    fontWeight: '700',
+    fontFamily: font.bold,
     letterSpacing: 2,
     marginTop: 5,
+  },
+
+  pressed: {
+    opacity: 0.7,
   },
 });

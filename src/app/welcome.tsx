@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   Animated,
@@ -19,6 +19,7 @@ import { Redirect, router } from 'expo-router';
 import { useAuth } from '@/auth/AuthContext';
 import { useI18n } from '@/i18n';
 import { LangSwitch } from '@/components/LangSwitch';
+import { colors, font } from '@/theme';
 
 const LOGO = require('@/assets/images/image.png');
 
@@ -27,17 +28,19 @@ export default function Welcome() {
   const { t } = useI18n();
   const { width } = useWindowDimensions();
 
-  const logoOpacity = useRef(new Animated.Value(0)).current;
-  const logoScale = useRef(new Animated.Value(0.85)).current;
+  // Valeurs d'animation stables (initialisateur paresseux : identité conservée
+  // entre les rendus, sans être des refs lues pendant le rendu).
+  const [logoOpacity] = useState(() => new Animated.Value(0));
+  const [logoScale] = useState(() => new Animated.Value(0.85));
 
-  const sloganOpacity = useRef(new Animated.Value(0)).current;
-  const sloganY = useRef(new Animated.Value(20)).current;
+  const [sloganOpacity] = useState(() => new Animated.Value(0));
+  const [sloganY] = useState(() => new Animated.Value(20));
 
-  const subtitleOpacity = useRef(new Animated.Value(0)).current;
+  const [subtitleOpacity] = useState(() => new Animated.Value(0));
 
-  const buttonOpacity = useRef(new Animated.Value(0)).current;
-  const buttonY = useRef(new Animated.Value(25)).current;
-  const buttonPulse = useRef(new Animated.Value(0)).current;
+  const [buttonOpacity] = useState(() => new Animated.Value(0));
+  const [buttonY] = useState(() => new Animated.Value(25));
+  const [buttonPulse] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     const animation = Animated.sequence([
@@ -123,7 +126,16 @@ export default function Welcome() {
       pulse.stop();
       clearTimeout(timer);
     };
-  }, []);
+  }, [
+    logoOpacity,
+    logoScale,
+    sloganOpacity,
+    sloganY,
+    subtitleOpacity,
+    buttonOpacity,
+    buttonY,
+    buttonPulse,
+  ]);
 
   if (phone) {
     return <Redirect href={'/' as never} />;
@@ -243,7 +255,7 @@ export default function Welcome() {
                 <Ionicons
                   name="arrow-forward"
                   size={19}
-                  color="#FFFFFF"
+                  color={colors.white}
                 />
               </View>
             </Pressable>
@@ -255,11 +267,11 @@ export default function Welcome() {
             <Ionicons
               name="shield-checkmark-outline"
               size={15}
-              color="#C5A3AA"
+              color={colors.accentSoft}
             />
 
             <Text style={styles.trustText}>
-              Une expérience pensée pour vous
+              {t('welcome.trust')}
             </Text>
           </View>
 
@@ -286,7 +298,7 @@ const styles = StyleSheet.create({
 
   screen: {
     flex: 1,
-    backgroundColor: '#292D32',
+    backgroundColor: colors.primary,
     overflow: 'hidden',
   },
 
@@ -301,7 +313,7 @@ const styles = StyleSheet.create({
     borderRadius: 195,
     top: -210,
     right: -130,
-    backgroundColor: '#A83245',
+    backgroundColor: colors.accent,
     opacity: 0.22,
   },
 
@@ -312,7 +324,7 @@ const styles = StyleSheet.create({
     borderRadius: 175,
     bottom: -190,
     left: -130,
-    backgroundColor: '#A83245',
+    backgroundColor: colors.accent,
     opacity: 0.13,
   },
 
@@ -322,7 +334,7 @@ const styles = StyleSheet.create({
     height: 230,
     borderRadius: 115,
     borderWidth: 1,
-    borderColor: '#666B72',
+    borderColor: colors.darkBorder,
     right: -130,
     bottom: 90,
     opacity: 0.2,
@@ -336,7 +348,7 @@ const styles = StyleSheet.create({
   },
 
   languageContainer: {
-    backgroundColor: '#3B4047',
+    backgroundColor: colors.darkSurfaceAlt,
     borderRadius: 12,
     paddingHorizontal: 5,
   },
@@ -351,14 +363,14 @@ const styles = StyleSheet.create({
 
   logoCard: {
     height: 155,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderRadius: 22,
     paddingHorizontal: 15,
     paddingVertical: 14,
     justifyContent: 'center',
     marginBottom: 43,
 
-    shadowColor: '#000000',
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.25,
     shadowRadius: 22,
@@ -375,25 +387,25 @@ const styles = StyleSheet.create({
   },
 
   slogan: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontSize: 29,
     lineHeight: 39,
-    fontWeight: '800',
+    fontFamily: font.extrabold,
     textAlign: 'center',
     letterSpacing: 0.2,
   },
 
   sloganAccent: {
-    color: '#D88A97',
+    color: colors.accentSoft,
     fontSize: 29,
     lineHeight: 39,
-    fontWeight: '900',
+    fontFamily: font.extrabold,
     textAlign: 'center',
     letterSpacing: 0.2,
   },
 
   subtitle: {
-    color: '#D0D2D5',
+    color: colors.onDarkMuted,
     fontSize: 14,
     marginTop: 15,
     letterSpacing: 0.4,
@@ -411,14 +423,14 @@ const styles = StyleSheet.create({
     width: 24,
     height: 5,
     borderRadius: 5,
-    backgroundColor: '#A83245',
+    backgroundColor: colors.accent,
   },
 
   indicatorInactive: {
     width: 6,
     height: 5,
     borderRadius: 5,
-    backgroundColor: '#777D84',
+    backgroundColor: colors.darkBorder,
   },
 
   buttonWrap: {
@@ -430,7 +442,7 @@ const styles = StyleSheet.create({
   cta: {
     minHeight: 61,
     borderRadius: 18,
-    backgroundColor: '#A83245',
+    backgroundColor: colors.accent,
     paddingLeft: 25,
     paddingRight: 9,
 
@@ -438,7 +450,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
 
-    shadowColor: '#A83245',
+    shadowColor: colors.accent,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 15,
@@ -450,9 +462,9 @@ const styles = StyleSheet.create({
   },
 
   ctaText: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontSize: 14,
-    fontWeight: '900',
+    fontFamily: font.extrabold,
     letterSpacing: 0.8,
   },
 
@@ -460,7 +472,7 @@ const styles = StyleSheet.create({
     width: 43,
     height: 43,
     borderRadius: 14,
-    backgroundColor: '#C65B6B',
+    backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -473,7 +485,7 @@ const styles = StyleSheet.create({
   },
 
   trustText: {
-    color: '#C5A3AA',
+    color: colors.accentSoft,
     fontSize: 11,
     letterSpacing: 0.2,
   },
@@ -489,15 +501,15 @@ const styles = StyleSheet.create({
   footerLine: {
     height: 1,
     width: 28,
-    backgroundColor: '#777D84',
+    backgroundColor: colors.darkBorder,
     opacity: 0.7,
   },
 
   footerText: {
-    color: '#D0D2D5',
+    color: colors.onDarkMuted,
     fontSize: 9,
     letterSpacing: 2.8,
-    fontWeight: '700',
+    fontFamily: font.bold,
   },
 
 });

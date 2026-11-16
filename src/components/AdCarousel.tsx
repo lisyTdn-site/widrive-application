@@ -13,7 +13,7 @@ import { router } from 'expo-router';
 
 import { ads, type Ad } from '@/data/ads';
 import { Img } from '@/components/Img';
-import { colors } from '@/theme/colors';
+import { colors, font } from '@/theme';
 import { useI18n } from '@/i18n';
 
 const GAP = 12;
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
 
     elevation: 5,
 
-    shadowColor: '#20232B',
+    shadowColor: colors.primary,
     shadowOpacity: 0.13,
     shadowRadius: 12,
     shadowOffset: {
@@ -188,20 +188,20 @@ const styles = StyleSheet.create({
   },
 
   tagText: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontSize: 10,
-    fontWeight: '900',
+    fontFamily: font.extrabold,
     letterSpacing: 0.7,
   },
 
   title: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontSize: 20,
-    fontWeight: '900',
+    fontFamily: font.extrabold,
   },
 
   subtitle: {
-    color: '#E4E2E3',
+    color: colors.onDark,
     fontSize: 13,
   },
 
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#C9CBCF',
+    backgroundColor: colors.onDarkMuted,
   },
 
   activeDot: {

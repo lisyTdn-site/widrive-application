@@ -1,7 +1,7 @@
-import { ScrollView, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/Screen';
-import { colors } from '@/theme/colors';
+import { colors, font } from '@/theme';
 import { useI18n } from '@/i18n';
 
 const assets = [
@@ -32,7 +32,7 @@ export default function Crypto() {
       <ScrollView contentContainerStyle={s.container}>
         <View style={s.hero}>
           <View style={s.heroIcon}>
-            <Ionicons name="logo-bitcoin" size={34} color="#FFFFFF" />
+            <Ionicons name="logo-bitcoin" size={34} color={colors.white} />
           </View>
 
           <Text style={s.heroTitle}>{t('crypto.hero')}</Text>
@@ -52,7 +52,7 @@ export default function Crypto() {
         {assets.map((asset) => (
           <View key={asset.symbol} style={s.asset}>
             <View style={[s.assetIcon, { backgroundColor: asset.color }]}>
-              <Ionicons name={asset.icon} size={25} color="#FFFFFF" />
+              <Ionicons name={asset.icon} size={25} color={colors.white} />
             </View>
 
             <View style={{ flex: 1 }}>
@@ -105,11 +105,11 @@ const s = StyleSheet.create({
   },
   heroTitle: {
     fontSize: 22,
-    fontWeight: '900',
-    color: '#FFFFFF',
+    fontFamily: font.extrabold,
+    color: colors.white,
   },
   heroText: {
-    color: '#E1E3E6',
+    color: colors.border,
     fontSize: 14,
     lineHeight: 22,
   },
@@ -126,16 +126,16 @@ const s = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#E8B65B',
+    backgroundColor: colors.gold,
   },
   badgeText: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: font.bold,
   },
   sectionTitle: {
     fontSize: 17,
-    fontWeight: '800',
+    fontFamily: font.extrabold,
     color: colors.primary,
     marginTop: 8,
   },
@@ -158,7 +158,7 @@ const s = StyleSheet.create({
   },
   assetName: {
     fontSize: 15,
-    fontWeight: '800',
+    fontFamily: font.extrabold,
     color: colors.primary,
   },
   assetSymbol: {
