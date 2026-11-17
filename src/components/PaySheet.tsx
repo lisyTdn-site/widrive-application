@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { colors, font, radius, spacing } from '@/theme';
+import { colors, font, radius } from '@/theme';
 import { chargeWallet, money, useWallet } from '@/lib/wallet';
 import { useI18n } from '@/i18n';
 
@@ -28,13 +28,17 @@ export function PaySheet({ visible, title, amount, deposit, onClose, onPaid }: P
   const [method, setMethod] = useState<'wallet' | 'momo'>('wallet');
   const [status, setStatus] = useState<'idle' | 'busy' | 'done'>('idle');
 
-  useEffect(() => {
+  // À chaque ouverture, on repart d'un état propre (ajustement pendant le rendu,
+  // pas d'effet : évite les rendus en cascade).
+  const [wasVisible, setWasVisible] = useState(visible);
+  if (visible !== wasVisible) {
+    setWasVisible(visible);
     if (visible) {
       setMode(hasDeposit ? 'deposit' : 'full');
       setMethod('wallet');
       setStatus('idle');
     }
-  }, [visible, hasDeposit]);
+  }
 
   const payAmount = mode === 'deposit' && hasDeposit ? (deposit as number) : amount;
   const enough = balance >= payAmount;
@@ -48,7 +52,7 @@ export function PaySheet({ visible, title, amount, deposit, onClose, onPaid }: P
   const pay = () => {
     setStatus('busy');
     setTimeout(() => {
-      if (method === 'wallet') chargeWallet(payAmount, title);
+      if (method === 'wallet') chargeWallet(payAmount, t('pay.txLabel', { title }));
       setStatus('done');
       onPaid?.({ amount: payAmount, method, mode });
     }, 1200);

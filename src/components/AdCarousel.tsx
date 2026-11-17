@@ -9,20 +9,25 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
+import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
 import { ads, type Ad } from '@/data/ads';
 import { Img } from '@/components/Img';
-import { colors, font } from '@/theme';
+import { colors, font, radius, shadow, spacing } from '@/theme';
 import { useI18n } from '@/i18n';
 
 const GAP = 12;
+const PADDING = 18;
+// Largeur de la carte suivante laissée visible, pour inviter au glissement.
+const PEEK = 24;
 
 export function AdCarousel() {
-  const { tr } = useI18n();
+  const { tr, t } = useI18n();
   const { width } = useWindowDimensions();
 
-  const slideWidth = width - 32;
+  const slideWidth = width - PADDING - GAP - PEEK;
 
   const listRef = useRef<FlatList<Ad>>(null);
   const dragging = useRef(false);
@@ -69,8 +74,7 @@ export function AdCarousel() {
           dragging.current = false;
 
           const newIndex = Math.round(
-            event.nativeEvent.contentOffset.x /
-              (slideWidth + GAP),
+            event.nativeEvent.contentOffset.x / (slideWidth + GAP),
           );
 
           setIndex(newIndex);
@@ -83,33 +87,44 @@ export function AdCarousel() {
                 router.push(item.route as never);
               }
             }}
-            style={[
+            style={({ pressed }) => [
               styles.slide,
-              { width: slideWidth },
+              { width: slideWidth, transform: [{ scale: pressed ? 0.985 : 1 }] },
             ]}
+            accessibilityRole={item.route ? 'button' : undefined}
           >
-            <Img
-              source={item.image}
-              style={styles.image}
-            />
+            <Img source={item.image} style={styles.image} />
 
-            <View style={styles.shade} />
+            <LinearGradient
+              colors={['rgba(25,27,33,0)', 'rgba(25,27,33,0.62)', 'rgba(25,27,33,0.96)'] as const}
+              locations={[0.12, 0.48, 1] as const}
+              style={styles.shade}
+            />
 
             <View style={styles.textContainer}>
               <View style={styles.tag}>
-                <Text style={styles.tagText}>
-                  {tr(item.tag)}
-                </Text>
+                <Text style={styles.tagText}>{tr(item.tag)}</Text>
               </View>
 
-              <Text style={styles.title}>
+              <Text style={styles.title} numberOfLines={2}>
                 {tr(item.title)}
               </Text>
 
-              <Text style={styles.subtitle}>
+              <Text style={styles.subtitle} numberOfLines={1}>
                 {tr(item.sub)}
               </Text>
             </View>
+
+            {item.route ? (
+              <View style={styles.cta}>
+                <Text style={styles.ctaText}>{t('home.discover')}</Text>
+                <MaterialCommunityIcons
+                  name="arrow-right"
+                  size={17}
+                  color={colors.primary}
+                />
+              </View>
+            ) : null}
           </Pressable>
         )}
       />
@@ -119,10 +134,7 @@ export function AdCarousel() {
         {ads.map((item, i) => (
           <View
             key={item.id}
-            style={[
-              styles.dot,
-              i === index && styles.activeDot,
-            ]}
+            style={[styles.dot, i === index && styles.activeDot]}
           />
         ))}
       </View>
@@ -132,25 +144,16 @@ export function AdCarousel() {
 
 const styles = StyleSheet.create({
   listContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: PADDING,
     gap: GAP,
   },
 
   slide: {
-    height: 185,
-    borderRadius: 24,
+    height: 210,
+    borderRadius: radius.xxl,
     overflow: 'hidden',
     backgroundColor: colors.primary,
-
-    elevation: 5,
-
-    shadowColor: colors.primary,
-    shadowOpacity: 0.13,
-    shadowRadius: 12,
-    shadowOffset: {
-      width: 0,
-      height: 5,
-    },
+    ...shadow.raised,
   },
 
   image: {
@@ -169,22 +172,22 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(20, 23, 30, 0.56)',
   },
 
   textContainer: {
     flex: 1,
     justifyContent: 'flex-end',
-    padding: 19,
-    gap: 6,
+    padding: spacing.xl,
+    paddingBottom: 56,
+    gap: spacing.sm,
   },
 
   tag: {
     alignSelf: 'flex-start',
     backgroundColor: colors.accent,
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.md,
     paddingVertical: 6,
-    borderRadius: 9,
+    borderRadius: radius.sm,
   },
 
   tagText: {
@@ -196,8 +199,10 @@ const styles = StyleSheet.create({
 
   title: {
     color: colors.white,
-    fontSize: 20,
+    fontSize: 21,
+    lineHeight: 26,
     fontFamily: font.extrabold,
+    paddingRight: spacing.xs,
   },
 
   subtitle: {
@@ -205,22 +210,43 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
 
+  cta: {
+    position: 'absolute',
+    left: spacing.xl,
+    bottom: spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.white,
+    paddingLeft: spacing.lg,
+    paddingRight: spacing.md,
+    height: 40,
+    borderRadius: radius.pill,
+  },
+
+  ctaText: {
+    color: colors.primary,
+    fontSize: 12,
+    fontFamily: font.extrabold,
+    letterSpacing: 0.3,
+  },
+
   dots: {
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 7,
-    marginTop: 12,
+    marginTop: spacing.md,
   },
 
   dot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: colors.onDarkMuted,
+    backgroundColor: colors.border,
   },
 
   activeDot: {
-    width: 20,
+    width: 22,
     backgroundColor: colors.accent,
   },
 });

@@ -4,7 +4,7 @@
 // (get / set / subscribe / useStore) ne changera pas.
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 
 type Updater<T> = T | ((prev: T) => T);
 
@@ -49,14 +49,7 @@ export function createStore<T>(key: string, initial: T): Store<T> {
 }
 
 export function useStore<T>(store: Store<T>): T {
-  const [value, setValue] = useState<T>(() => store.get());
-
-  useEffect(() => {
-    setValue(store.get());
-    return store.subscribe(() => setValue(store.get()));
-  }, [store]);
-
-  return value;
+  return useSyncExternalStore(store.subscribe, store.get, store.get);
 }
 
 let seq = 0;

@@ -38,7 +38,7 @@ export default function Profile() {
 
   return (
     <SafeAreaView style={s.root} edges={['top']}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <ScrollView style={s.body} contentContainerStyle={{ paddingBottom: 24 }}>
         <View style={s.header}>
           <View style={s.avatar}><Text style={s.avatarText}>{initials}</Text></View>
@@ -96,13 +96,13 @@ export default function Profile() {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.primary },
+  root: { flex: 1, backgroundColor: colors.background },
   body: { flex: 1, backgroundColor: colors.background },
-  header: { backgroundColor: colors.primary, alignItems: 'center', paddingTop: 16, paddingBottom: 24, borderBottomLeftRadius: 28, borderBottomRightRadius: 28, gap: 4 },
+  header: { alignItems: 'center', paddingTop: 16, paddingBottom: 20, gap: 4 },
   avatar: { width: 76, height: 76, borderRadius: 38, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
   avatarText: { color: colors.white, fontSize: 28, fontFamily: font.extrabold },
-  name: { color: colors.white, fontSize: 20, fontFamily: font.extrabold },
-  phone: { color: colors.onDark, fontSize: 14 },
+  name: { color: colors.primary, fontSize: 20, fontFamily: font.extrabold },
+  phone: { color: colors.textMuted, fontSize: 14 },
   section: { fontSize: 15, fontFamily: font.extrabold, color: colors.textMuted, marginHorizontal: 16, marginTop: 20, marginBottom: 4, textTransform: 'uppercase' },
   card: { backgroundColor: colors.surface, borderRadius: 16, borderWidth: 1, borderColor: colors.border, marginHorizontal: 16, marginTop: 8, paddingHorizontal: 14 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 13 },

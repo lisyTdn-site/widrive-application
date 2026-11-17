@@ -12,6 +12,9 @@ export const fr = {
   // Bienvenue
   'welcome.continue': 'CONTINUER',
   'welcome.trust': 'Une expérience pensée pour vous',
+  'welcome.soundOn': 'Activer le son',
+  'welcome.soundOff': 'Couper le son',
+  'welcome.tagline': 'Votre vision, notre mouvement.',
 
   // Authentification
   'auth.welcome': 'Bienvenue 👋',
@@ -147,6 +150,8 @@ export const fr = {
 
   // Location de véhicules
   'rent.title': 'Location de véhicules',
+  'rent.heroTitle': 'Louez la voiture idéale',
+  'rent.heroSub': 'Un véhicule fiable, avec ou sans chauffeur.',
   'rent.cat.city': 'Citadine',
   'rent.cat.sedan': 'Berline',
   'rent.cat.suv': 'SUV',
@@ -275,6 +280,7 @@ export const fr = {
   'vehicle.mileage': 'Kilométrage',
   'vehicle.fuel': 'Carburant',
   'vehicle.gearbox': 'Boîte',
+  'vehicle.seats': 'Places',
   'vehicle.drive': 'Transmission',
   'vehicle.type': 'Type',
   'vehicle.location': 'Localisation',
@@ -320,6 +326,7 @@ export const fr = {
   'home.details': 'Détails',
   'home.featured': 'À la une',
   'home.featuredSub': 'Découvrez nos offres et nouveautés',
+  'home.discover': 'Découvrir',
   'home.servicesSub': 'Tout votre quotidien, simplifié.',
   'home.soonUpper': 'BIENTÔT',
   'home.moveSmart': 'MOVE SMART. LIVE BETTER.',
@@ -466,6 +473,18 @@ export const fr = {
   'map.loading': 'Chargement de la carte…',
   'map.open': 'Ouvrir dans Google Maps',
 
+  // --- Zone (lancement : Abomey-Calavi) ---
+  'zone.here': 'Zone de lancement · {zone}',
+  'zone.servicesHere': 'Services disponibles à {zone}',
+  'zone.mapTitle': 'Annonces à {zone}',
+  'zone.mapSub': '{n} annonce(s) disponibles autour de vous',
+  'zone.rentTitle': 'Véhicules à louer · {zone}',
+  'zone.rentSub': '{n} véhicule(s) disponibles',
+  'zone.housingTitle': 'Logements à louer · {zone}',
+  'zone.housingSub': '{n} logement(s) disponibles',
+  'zone.vehiclesTitle': 'Véhicules à vendre · {zone}',
+  'zone.vehiclesSub': '{n} véhicule(s) disponibles',
+
   // --- Paiement (acompte / totalité) ---
   'pay.choose': 'Choisissez votre paiement',
   'pay.deposit': 'Payer un acompte',
@@ -535,7 +554,9 @@ export const fr = {
   'rent.dayCount': '{n} jour(s)',
 
   // --- Logements : détail & disponibilités ---
+  'apt.kind': 'Type',
   'apt.quartier': 'Quartier',
+  'apt.surface': 'Surface',
   'apt.city': 'Ville',
   'apt.photos': '{n} photos',
   'apt.description': 'Description',

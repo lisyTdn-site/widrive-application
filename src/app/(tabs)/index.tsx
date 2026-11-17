@@ -17,16 +17,17 @@ import { StatusBar } from 'expo-status-bar';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
-import { colors, font } from '@/theme';
+import { colors, font, radius, spacing } from '@/theme';
 import { useAuth } from '@/auth/AuthContext';
 import { useI18n } from '@/i18n';
 import { modules } from '@/core/modules';
+import { CALAVI } from '@/data/zones';
 import { AdCarousel } from '@/components/AdCarousel';
 import { money, useWallet } from '@/lib/wallet';
 
 export default function Home() {
   const { user } = useAuth();
-  const { t } = useI18n();
+  const { t, tr } = useI18n();
   const { balance } = useWallet();
 
   const { width } = useWindowDimensions();
@@ -34,8 +35,8 @@ export default function Home() {
   const [hidden, setHidden] = useState(false);
   const [query, setQuery] = useState('');
 
-  const gap = 12;
-  const padding = 18;
+  const gap = spacing.md;
+  const padding = spacing.lg;
   const tileWidth = (width - padding * 2 - gap * 2) / 3;
 
   const list = modules.filter(
@@ -56,34 +57,32 @@ export default function Home() {
       pathname: '/bientot',
       params: {
         title: `${t(module.title)} ${t(module.sub)}`,
-        kind:
-          module.status === 'maintenance'
-            ? 'maintenance'
-            : 'soon',
+        kind: module.status === 'maintenance' ? 'maintenance' : 'soon',
       },
     } as never);
   };
 
   return (
     <SafeAreaView style={styles.root} edges={['top']}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
 
       <ScrollView
+        style={styles.body}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.content}
       >
-
         {/* EN-TÊTE */}
-
         <View style={styles.header}>
           <View style={styles.topRow}>
             <View style={styles.brand}>
-              <Image
-                source={require('@/assets/images/logo.jpg')}
-                style={styles.logo}
-                resizeMode="contain"
-              />
+              <View style={styles.logoPill}>
+                <Image
+                  source={require('@/assets/images/logo.jpg')}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+              </View>
 
               <View>
                 <Text style={styles.brandName}>WIDRIVE</Text>
@@ -92,21 +91,12 @@ export default function Home() {
             </View>
 
             <Pressable
-              style={({ pressed }) => [
-                styles.notification,
-                pressed && styles.pressed,
-              ]}
-              onPress={() =>
-                router.push('/notifications' as never)
-              }
+              style={({ pressed }) => [styles.notification, pressed && styles.pressed]}
+              onPress={() => router.push('/notifications' as never)}
               accessibilityRole="button"
               accessibilityLabel={t('notifications.title')}
             >
-              <MaterialCommunityIcons
-                name="bell-outline"
-                size={23}
-                color={colors.white}
-              />
+              <MaterialCommunityIcons name="bell-outline" size={22} color={colors.primary} />
               <View style={styles.notificationDot} />
             </Pressable>
           </View>
@@ -115,121 +105,68 @@ export default function Home() {
             {t('home.welcomeName', { name: user?.firstName || t('home.welcomeDefault') })}
           </Text>
 
-          <Text style={styles.intro}>
-            {t('home.intro')}
-          </Text>
+          <Text style={styles.intro}>{t('home.intro')}</Text>
+        </View>
 
-          {/* PORTEFEUILLE */}
-
-          <View style={styles.wallet}>
-            <View style={styles.walletTop}>
-              <View style={styles.walletLabel}>
-                <MaterialCommunityIcons
-                  name="wallet-outline"
-                  size={20}
-                  color={colors.accentSoft}
-                />
-
-                <Text style={styles.walletLabelText}>
-                  {t('home.wallet')}
-                </Text>
-              </View>
-
-              <Pressable
-                onPress={() => setHidden(!hidden)}
-                hitSlop={12}
-                accessibilityRole="button"
-                accessibilityLabel={t('home.toggleBalance')}
-              >
-                <MaterialCommunityIcons
-                  name={
-                    hidden
-                      ? 'eye-off-outline'
-                      : 'eye-outline'
-                  }
-                  size={22}
-                  color={colors.white}
-                />
-              </Pressable>
+        {/* PORTEFEUILLE */}
+        <View style={styles.card}>
+          <View style={styles.cardTop}>
+            <View style={styles.cardLabel}>
+              <MaterialCommunityIcons name="wallet-outline" size={17} color={colors.accent} />
+              <Text style={styles.cardLabelText}>{t('home.wallet')}</Text>
             </View>
 
-            <Text style={styles.balance}>
-              {hidden ? '••••••••' : money(balance)}
-            </Text>
-
-            <Text style={styles.available}>
-                  {t('home.available')}
-            </Text>
-
-            <View style={styles.walletDivider} />
-
-            <View style={styles.walletActions}>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.walletAction,
-                  pressed && styles.pressed,
-                ]}
-                onPress={() =>
-                  router.push('/transfer?mode=dep' as never)
-                }
-              >
-                <MaterialCommunityIcons
-                  name="plus-circle-outline"
-                  size={21}
-                  color={colors.white}
-                />
-                <Text style={styles.actionText}>{t('home.deposit')}</Text>
-              </Pressable>
-
-              <View style={styles.verticalDivider} />
-
-              <Pressable
-                style={({ pressed }) => [
-                  styles.walletAction,
-                  pressed && styles.pressed,
-                ]}
-                onPress={() =>
-                  router.push('/transfer?mode=ret' as never)
-                }
-              >
-                <MaterialCommunityIcons
-                  name="arrow-up-circle-outline"
-                  size={21}
-                  color={colors.white}
-                />
-                <Text style={styles.actionText}>{t('home.withdraw')}</Text>
-              </Pressable>
-
-              <View style={styles.verticalDivider} />
-
-              <Pressable
-                style={({ pressed }) => [
-                  styles.walletAction,
-                  pressed && styles.pressed,
-                ]}
-                onPress={() =>
-                  router.push('/wallet' as never)
-                }
-              >
-                <MaterialCommunityIcons
-                  name="arrow-right-circle-outline"
-                  size={21}
-                  color={colors.white}
-                />
-                <Text style={styles.actionText}>{t('home.details')}</Text>
-              </Pressable>
-            </View>
+            <Pressable
+              onPress={() => setHidden(!hidden)}
+              hitSlop={12}
+              accessibilityRole="button"
+              accessibilityLabel={t('home.toggleBalance')}
+            >
+              <MaterialCommunityIcons
+                name={hidden ? 'eye-off-outline' : 'eye-outline'}
+                size={21}
+                color={colors.textMuted}
+              />
+            </Pressable>
           </View>
+
+          <Text style={styles.balance}>{hidden ? '••••••••' : money(balance)}</Text>
+          <Text style={styles.available}>{t('home.available')}</Text>
+
+          <View style={styles.actions}>
+            <Pressable
+              style={({ pressed }) => [styles.action, pressed && styles.pressed]}
+              onPress={() => router.push('/transfer?mode=dep' as never)}
+              accessibilityRole="button"
+            >
+              <MaterialCommunityIcons name="plus-circle-outline" size={19} color={colors.white} />
+              <Text style={styles.actionText}>{t('home.deposit')}</Text>
+            </Pressable>
+
+            <Pressable
+              style={({ pressed }) => [styles.action, pressed && styles.pressed]}
+              onPress={() => router.push('/transfer?mode=ret' as never)}
+              accessibilityRole="button"
+            >
+              <MaterialCommunityIcons name="arrow-up-circle-outline" size={19} color={colors.white} />
+              <Text style={styles.actionText}>{t('home.withdraw')}</Text>
+            </Pressable>
+          </View>
+
+          <Pressable
+            style={({ pressed }) => [styles.ghost, pressed && styles.pressed]}
+            onPress={() => router.push('/wallet' as never)}
+            accessibilityRole="button"
+          >
+            <MaterialCommunityIcons name="chart-line" size={17} color={colors.accent} />
+            <Text style={styles.ghostText}>{t('home.details')}</Text>
+            <MaterialCommunityIcons name="chevron-right" size={18} color={colors.textMuted} />
+          </Pressable>
         </View>
 
         {/* RECHERCHE */}
-
         <View style={styles.search}>
-          <MaterialCommunityIcons
-            name="magnify"
-            size={23}
-            color={colors.textMuted}
-          />
+          <MaterialCommunityIcons name="magnify" size={21} color={colors.textMuted} />
 
           <TextInput
             value={query}
@@ -245,131 +182,76 @@ export default function Home() {
               accessibilityRole="button"
               accessibilityLabel={t('common.clear')}
             >
-              <MaterialCommunityIcons
-                name="close-circle"
-                size={20}
-                color={colors.textMuted}
-              />
+              <MaterialCommunityIcons name="close-circle" size={19} color={colors.textMuted} />
             </Pressable>
           )}
         </View>
 
+        {/* SERVICES — en priorité : visibles sans défilement */}
+        <View style={styles.sectionHead}>
+          <Text style={styles.section}>{t('home.services')}</Text>
+          <Text style={styles.sectionSub}>{t('home.servicesSub')}</Text>
+          <View style={styles.zonePill}>
+            <MaterialCommunityIcons name="map-marker-radius" size={13} color={colors.accent} />
+            <Text style={styles.zonePillText}>{t('zone.servicesHere', { zone: tr(CALAVI.name) })}</Text>
+          </View>
+        </View>
+
+        <View style={styles.grid}>
+          {list.map((module) => {
+            const disabled = module.status !== 'active';
+
+            return (
+              <Pressable
+                key={module.id}
+                onPress={() => openModule(module)}
+                style={({ pressed }) => [
+                  styles.serviceCard,
+                  { width: tileWidth, transform: [{ scale: pressed ? 0.97 : 1 }] },
+                ]}
+              >
+                <View style={[styles.iconBox, disabled && styles.iconDisabled]}>
+                  <MaterialCommunityIcons
+                    name={module.icon}
+                    size={26}
+                    color={disabled ? colors.textMuted : colors.accent}
+                  />
+                </View>
+
+                <Text style={styles.serviceTitle} numberOfLines={2}>
+                  {t(module.title)}
+                </Text>
+
+                {disabled ? (
+                  <Text style={styles.soon}>{t('home.soonUpper')}</Text>
+                ) : (
+                  <MaterialCommunityIcons name="arrow-right" size={15} color={colors.textMuted} />
+                )}
+              </Pressable>
+            );
+          })}
+        </View>
+
         {/* OFFRES */}
-
         {!query.trim() && (
-          <View style={styles.offers}>
-            <View style={styles.heading}>
-              <View>
-                <Text style={styles.headingTitle}>
-                  {t('home.featured')}
-                </Text>
-                <Text style={styles.headingSub}>
-                  {t('home.featuredSub')}
-                </Text>
-              </View>
-
-              <MaterialCommunityIcons
-                name="star-four-points"
-                size={22}
-                color={colors.gold}
-              />
+          <>
+            <View style={styles.sectionHead}>
+              <Text style={styles.section}>{t('home.featured')}</Text>
+              <Text style={styles.sectionSub}>{t('home.featuredSub')}</Text>
             </View>
 
             <AdCarousel />
-          </View>
+          </>
         )}
 
-        {/* SERVICES */}
-
-        <View style={styles.services}>
-          <View style={styles.heading}>
-            <View>
-              <Text style={styles.headingTitle}>
-                {t('home.services')}
-              </Text>
-              <Text style={styles.headingSub}>
-                {t('home.servicesSub')}
-              </Text>
-            </View>
-
-            <View style={styles.counter}>
-              <Text style={styles.counterText}>
-                {String(list.length).padStart(2, '0')}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.grid}>
-            {list.map((module) => {
-              const disabled = module.status !== 'active';
-
-              return (
-                <Pressable
-                  key={module.id}
-                  onPress={() => openModule(module)}
-                  style={({ pressed }) => [
-                    styles.serviceCard,
-                    {
-                      width: tileWidth,
-                      transform: [
-                        { scale: pressed ? 0.97 : 1 },
-                      ],
-                    },
-                  ]}
-                >
-                  <View
-                    style={[
-                      styles.iconBox,
-                      disabled && styles.iconDisabled,
-                    ]}
-                  >
-                    <MaterialCommunityIcons
-                      name={module.icon}
-                      size={31}
-                      color={
-                        disabled
-                          ? colors.textMuted
-                          : colors.accent
-                      }
-                    />
-                  </View>
-
-                  <Text
-                    style={styles.serviceTitle}
-                    numberOfLines={2}
-                  >
-                    {t(module.title)}
-                  </Text>
-
-                  {disabled ? (
-                    <Text style={styles.soon}>{t('home.soonUpper')}</Text>
-                  ) : (
-                    <MaterialCommunityIcons
-                      name="arrow-right"
-                      size={16}
-                      color={colors.textMuted}
-                    />
-                  )}
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
-
         {/* SIGNATURE */}
-
         <View style={styles.signature}>
           <View style={styles.signatureLine} />
 
-          <Text style={styles.signatureText}>
-            WIDRIVE AFRICA
-          </Text>
+          <Text style={styles.signatureText}>WIDRIVE AFRICA</Text>
 
-          <Text style={styles.signatureSub}>
-            {t('home.moveSmart')}
-          </Text>
+          <Text style={styles.signatureSub}>{t('home.moveSmart')}</Text>
         </View>
-
       </ScrollView>
     </SafeAreaView>
   );
@@ -381,67 +263,83 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
 
-  content: {
-    paddingBottom: 35,
+  body: {
+    flex: 1,
+    backgroundColor: colors.background,
   },
 
+  content: {
+    paddingBottom: spacing.xxxl,
+  },
+
+  // --- En-tête (même traitement que Portefeuille / Profil) ---
   header: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 25,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.md,
+    gap: spacing.xs,
   },
 
   topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 27,
+    marginBottom: spacing.lg,
   },
 
   brand: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: spacing.md,
+  },
+
+  logoPill: {
+    width: 46,
+    height: 46,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 5,
   },
 
   logo: {
-    width: 48,
-    height: 48,
-    borderRadius: 13,
-    backgroundColor: colors.surface,
+    width: '100%',
+    height: '100%',
   },
 
   brandName: {
-    color: colors.white,
-    fontSize: 17,
+    color: colors.primary,
+    fontSize: 16,
     fontFamily: font.extrabold,
     letterSpacing: 2,
   },
 
   brandSub: {
-    color: colors.accentSoft,
+    color: colors.accent,
     fontSize: 10,
     fontFamily: font.extrabold,
-    letterSpacing: 4,
-    marginTop: 3,
+    letterSpacing: 3.5,
+    marginTop: 2,
   },
 
   notification: {
     width: 46,
     height: 46,
-    borderRadius: 16,
-    backgroundColor: colors.darkSurfaceAlt,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   notificationDot: {
     position: 'absolute',
-    top: 9,
-    right: 10,
+    top: 11,
+    right: 12,
     width: 8,
     height: 8,
     borderRadius: 4,
@@ -449,100 +347,115 @@ const styles = StyleSheet.create({
   },
 
   welcome: {
-    color: colors.white,
-    fontSize: 24,
+    color: colors.primary,
+    fontSize: 22,
     fontFamily: font.extrabold,
   },
 
   intro: {
-    color: colors.onDarkMuted,
+    color: colors.textMuted,
     fontSize: 13,
-    marginTop: 6,
-    marginBottom: 21,
+    marginTop: spacing.xs,
   },
 
-  wallet: {
-    backgroundColor: colors.darkSurface,
-    borderRadius: 24,
-    padding: 19,
+  // --- Carte portefeuille (carte blanche standard) ---
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.darkBorder,
+    borderColor: colors.border,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+    padding: spacing.lg,
   },
 
-  walletTop: {
+  cardTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
 
-  walletLabel: {
+  cardLabel: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
 
-  walletLabelText: {
-    color: colors.accentSoft,
-    fontSize: 13,
+  cardLabelText: {
+    color: colors.textMuted,
+    fontSize: 12,
     fontFamily: font.bold,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
   },
 
   balance: {
-    color: colors.white,
+    color: colors.primary,
     fontSize: 30,
     fontFamily: font.extrabold,
-    marginTop: 17,
+    marginTop: spacing.md,
   },
 
   available: {
-    color: colors.onDarkMuted,
+    color: colors.textMuted,
     fontSize: 12,
-    marginTop: 5,
+    marginTop: spacing.xs,
   },
 
-  walletDivider: {
-    height: 1,
-    backgroundColor: colors.darkBorder,
-    marginVertical: 17,
+  actions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.lg,
   },
 
-  walletActions: {
+  action: {
+    flex: 1,
+    height: 46,
+    borderRadius: radius.pill,
+    backgroundColor: colors.accent,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
-  },
-
-  walletAction: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
+    justifyContent: 'center',
+    gap: 6,
   },
 
   actionText: {
     color: colors.white,
-    fontSize: 12,
+    fontSize: 14,
     fontFamily: font.extrabold,
   },
 
-  verticalDivider: {
-    height: 23,
-    width: 1,
-    backgroundColor: colors.darkBorder,
+  ghost: {
+    marginTop: spacing.sm,
+    height: 44,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surfaceAlt,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
   },
 
+  ghostText: {
+    flex: 1,
+    color: colors.primary,
+    fontSize: 14,
+    fontFamily: font.bold,
+  },
+
+  // --- Recherche ---
   search: {
-    height: 55,
-    marginHorizontal: 20,
-    marginTop: 22,
-    marginBottom: 20,
-    paddingHorizontal: 16,
+    height: 52,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+    paddingHorizontal: spacing.lg,
     backgroundColor: colors.surface,
-    borderRadius: 17,
+    borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.border,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: spacing.sm,
   },
 
   searchInput: {
@@ -551,77 +464,71 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  offers: {
-    marginBottom: 26,
+  // --- Titres de section (même style que Profil) ---
+  sectionHead: {
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.xxl,
+    marginBottom: spacing.sm,
   },
 
-  heading: {
-    marginHorizontal: 20,
-    marginBottom: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-
-  headingTitle: {
-    color: colors.primary,
-    fontSize: 20,
+  section: {
+    fontSize: 14,
     fontFamily: font.extrabold,
+    color: colors.textMuted,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
   },
 
-  headingSub: {
+  sectionSub: {
     color: colors.textMuted,
     fontSize: 12,
-    marginTop: 5,
+    marginTop: 2,
   },
 
-  services: {
-    marginTop: 5,
-  },
-
-  counter: {
-    width: 40,
-    height: 40,
-    borderRadius: 14,
-    backgroundColor: colors.accentTint,
+  zonePill: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 5,
+    alignSelf: 'flex-start',
+    marginTop: spacing.sm,
+    backgroundColor: colors.accentTint,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 5,
+    borderRadius: radius.pill,
   },
 
-  counterText: {
-    color: colors.accent,
-    fontSize: 13,
+  zonePillText: {
+    fontSize: 12,
     fontFamily: font.extrabold,
+    color: colors.accent,
   },
 
+  // --- Grille de services ---
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
-    paddingHorizontal: 18,
+    gap: spacing.md,
+    paddingHorizontal: spacing.lg,
+    marginTop: spacing.sm,
   },
 
   serviceCard: {
-    minHeight: 142,
+    minHeight: 132,
     backgroundColor: colors.surface,
-    borderRadius: 21,
+    borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.border,
-    paddingVertical: 15,
-    paddingHorizontal: 7,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.xs,
     alignItems: 'center',
     justifyContent: 'space-between',
-    elevation: 2,
-    shadowColor: colors.primary,
-    shadowOpacity: 0.045,
-    shadowRadius: 9,
-    shadowOffset: { width: 0, height: 3 },
+    gap: spacing.sm,
   },
 
   iconBox: {
-    width: 61,
-    height: 61,
-    borderRadius: 20,
+    width: 52,
+    height: 52,
+    borderRadius: radius.lg,
     backgroundColor: colors.accentTint,
     alignItems: 'center',
     justifyContent: 'center',
@@ -636,8 +543,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: font.extrabold,
     textAlign: 'center',
-    lineHeight: 17,
-    minHeight: 34,
+    lineHeight: 16,
+    minHeight: 32,
   },
 
   soon: {
@@ -647,9 +554,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
   },
 
+  // --- Signature ---
   signature: {
     alignItems: 'center',
-    marginTop: 34,
+    marginTop: spacing.xxxl,
   },
 
   signatureLine: {
@@ -657,7 +565,7 @@ const styles = StyleSheet.create({
     height: 3,
     borderRadius: 3,
     backgroundColor: colors.accent,
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
 
   signatureText: {
@@ -672,10 +580,10 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontFamily: font.bold,
     letterSpacing: 2,
-    marginTop: 5,
+    marginTop: spacing.xs,
   },
 
   pressed: {
-    opacity: 0.7,
+    opacity: 0.75,
   },
 });

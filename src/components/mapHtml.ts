@@ -1,13 +1,23 @@
 // Génère le HTML d'une carte OpenStreetMap (Leaflet) sans clé API.
 // Utilisé par MapView (natif via WebView) et MapView.web (iframe).
 
+export type MapPoint = { lat: number; lng: number; label?: string };
+
 const escape = (value: string) =>
   value.replace(/[<>&"]/g, (c) => (
     { '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' } as Record<string, string>
   )[c] ?? c);
 
-export function mapHtml(lat: number, lng: number, label = '', zoom = 15): string {
-  const safe = escape(label);
+export function mapHtml(points: MapPoint[], zoom = 15): string {
+  const markers = points.map((p) => ({
+    lat: p.lat,
+    lng: p.lng,
+    label: p.label ? escape(p.label) : '',
+  }));
+
+  const data = JSON.stringify(markers);
+  const first = markers[0] ?? { lat: 6.4489, lng: 2.3556 };
+
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -27,13 +37,30 @@ export function mapHtml(lat: number, lng: number, label = '', zoom = 15): string
 <script>
   (function () {
     try {
-      var map = L.map('map', { zoomControl: false, scrollWheelZoom: false }).setView([${lat}, ${lng}], ${zoom});
+      var pts = ${data};
+      var map = L.map('map', { zoomControl: false, scrollWheelZoom: false });
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '&copy; OpenStreetMap'
       }).addTo(map);
-      var marker = L.marker([${lat}, ${lng}]).addTo(map);
-      ${safe ? `marker.bindPopup(${JSON.stringify(safe)}).openPopup();` : ''}
+
+      var markers = [];
+      for (var i = 0; i < pts.length; i++) {
+        var p = pts[i];
+        var m = L.marker([p.lat, p.lng]).addTo(map);
+        if (p.label) { m.bindPopup(p.label); }
+        markers.push(m);
+      }
+
+      if (markers.length === 1) {
+        map.setView([${first.lat}, ${first.lng}], ${zoom});
+        if (pts[0].label) { markers[0].openPopup(); }
+      } else if (markers.length > 1) {
+        map.fitBounds(L.featureGroup(markers).getBounds(), { padding: [30, 30] });
+      } else {
+        map.setView([${first.lat}, ${first.lng}], ${zoom});
+      }
+
       setTimeout(function () { map.invalidateSize(); }, 350);
     } catch (e) {}
   })();

@@ -14,6 +14,9 @@ export const en: Record<Key, string> = {
   // Welcome
   'welcome.continue': 'CONTINUE',
   'welcome.trust': 'An experience designed for you',
+  'welcome.soundOn': 'Turn on sound',
+  'welcome.soundOff': 'Turn off sound',
+  'welcome.tagline': 'Your vision, our movement.',
 
   // Authentication
   'auth.welcome': 'Welcome 👋',
@@ -139,6 +142,8 @@ export const en: Record<Key, string> = {
 
   // Vehicle rental
   'rent.title': 'Vehicle rental',
+  'rent.heroTitle': 'Rent the ideal car',
+  'rent.heroSub': 'A reliable car, with or without a driver.',
   'rent.cat.city': 'City car',
   'rent.cat.sedan': 'Sedan',
   'rent.cat.suv': 'SUV',
@@ -267,6 +272,7 @@ export const en: Record<Key, string> = {
   'vehicle.mileage': 'Mileage',
   'vehicle.fuel': 'Fuel',
   'vehicle.gearbox': 'Gearbox',
+  'vehicle.seats': 'Seats',
   'vehicle.drive': 'Drivetrain',
   'vehicle.type': 'Type',
   'vehicle.location': 'Location',
@@ -312,6 +318,7 @@ export const en: Record<Key, string> = {
   'home.details': 'Details',
   'home.featured': 'Featured',
   'home.featuredSub': 'Discover our offers and news',
+  'home.discover': 'Discover',
   'home.servicesSub': 'Everything you need, simplified.',
   'home.soonUpper': 'COMING SOON',
   'home.moveSmart': 'MOVE SMART. LIVE BETTER.',
@@ -458,6 +465,18 @@ export const en: Record<Key, string> = {
   'map.loading': 'Loading map…',
   'map.open': 'Open in Google Maps',
 
+  // --- Zone (launch: Abomey-Calavi) ---
+  'zone.here': 'Launch zone · {zone}',
+  'zone.servicesHere': 'Services available in {zone}',
+  'zone.mapTitle': 'Listings in {zone}',
+  'zone.mapSub': '{n} listing(s) available around you',
+  'zone.rentTitle': 'Cars to rent · {zone}',
+  'zone.rentSub': '{n} car(s) available',
+  'zone.housingTitle': 'Homes to rent · {zone}',
+  'zone.housingSub': '{n} home(s) available',
+  'zone.vehiclesTitle': 'Cars for sale · {zone}',
+  'zone.vehiclesSub': '{n} car(s) available',
+
   // --- Payment (deposit / full) ---
   'pay.choose': 'Choose your payment',
   'pay.deposit': 'Pay a deposit',
@@ -527,7 +546,9 @@ export const en: Record<Key, string> = {
   'rent.dayCount': '{n} day(s)',
 
   // --- Housing: detail & availability ---
+  'apt.kind': 'Type',
   'apt.quartier': 'Neighborhood',
+  'apt.surface': 'Surface',
   'apt.city': 'City',
   'apt.photos': '{n} photos',
   'apt.description': 'Description',

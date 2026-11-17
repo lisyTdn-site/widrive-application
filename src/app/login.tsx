@@ -188,7 +188,7 @@ export default function Login() {
 
   return (
     <SafeAreaView style={s.screen}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
           <View style={s.header}>
@@ -199,9 +199,9 @@ export default function Login() {
                 accessibilityRole="button"
                 accessibilityLabel={t('common.back')}
               >
-                <Ionicons name="chevron-back" size={22} color={colors.white} />
+                <Ionicons name="chevron-back" size={22} color={colors.primary} />
               </Pressable>
-              <LangSwitch dark />
+              <LangSwitch />
             </View>
             <View style={s.logoPill}>
               <Image source={require('@/assets/images/logo.jpg')} style={s.logo} resizeMode="contain" />
@@ -348,16 +348,16 @@ export default function Login() {
 }
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.primary },
+  screen: { flex: 1, backgroundColor: colors.background },
   scroll: { flexGrow: 1 },
-  header: { alignItems: 'center', paddingTop: 8, paddingBottom: 24, paddingHorizontal: 16, gap: 6 },
+  header: { alignItems: 'center', paddingTop: 8, paddingBottom: 18, paddingHorizontal: 16, gap: 6 },
   headerTop: { alignSelf: 'stretch', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  back: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
-  logoPill: { backgroundColor: colors.surface, borderRadius: 22, paddingHorizontal: 16, paddingVertical: 8, marginBottom: 10 },
+  back: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
+  logoPill: { backgroundColor: colors.surface, borderRadius: 22, paddingHorizontal: 16, paddingVertical: 8, marginBottom: 10, borderWidth: 1, borderColor: colors.border },
   logo: { width: 150, height: 58 },
-  hello: { fontSize: 24, fontFamily: font.extrabold, color: colors.white },
-  helloSub: { fontSize: 14, color: colors.onDark },
-  card: { flex: 1, backgroundColor: colors.background, borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: 22, gap: 12, minHeight: 460 },
+  hello: { fontSize: 24, fontFamily: font.extrabold, color: colors.primary },
+  helloSub: { fontSize: 14, color: colors.textMuted },
+  card: { flex: 1, padding: 22, gap: 12, minHeight: 460 },
   tabs: { flexDirection: 'row', backgroundColor: colors.surfaceAlt, borderRadius: 16, padding: 4 },
   tab: { flex: 1, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   tabOn: { backgroundColor: colors.primary },

@@ -94,7 +94,7 @@ export default function WalletTab() {
 
   return (
     <SafeAreaView style={s.root} edges={['top']}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
 
       <ScrollView style={s.body} contentContainerStyle={{ paddingBottom: 32 }}>
         <View style={s.header}>
@@ -127,9 +127,9 @@ export default function WalletTab() {
             onPress={() => router.push('/bookings' as never)}
             accessibilityRole="button"
           >
-            <Ionicons name="calendar-outline" size={16} color={colors.white} />
+            <Ionicons name="calendar-outline" size={16} color={colors.accent} />
             <Text style={s.bookingsText}>{t('wt.myBookings')}</Text>
-            <Ionicons name="chevron-forward" size={16} color={colors.white} />
+            <Ionicons name="chevron-forward" size={16} color={colors.accent} />
           </Pressable>
         </View>
 
@@ -258,20 +258,17 @@ export default function WalletTab() {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.primary },
+  root: { flex: 1, backgroundColor: colors.background },
   body: { flex: 1, backgroundColor: colors.background },
   header: {
-    backgroundColor: colors.primary,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
-    paddingBottom: spacing.xl,
-    borderBottomLeftRadius: radius.xxl,
-    borderBottomRightRadius: radius.xxl,
+    paddingBottom: spacing.md,
     gap: 6,
   },
-  title: { color: colors.white, fontSize: 20, fontFamily: font.extrabold, marginBottom: spacing.sm },
-  label: { color: colors.onDark, fontSize: 13, fontFamily: font.semibold },
-  balance: { color: colors.white, fontSize: 32, fontFamily: font.extrabold, marginBottom: spacing.sm },
+  title: { color: colors.primary, fontSize: 20, fontFamily: font.extrabold, marginBottom: spacing.sm },
+  label: { color: colors.textMuted, fontSize: 13, fontFamily: font.semibold },
+  balance: { color: colors.primary, fontSize: 32, fontFamily: font.extrabold, marginBottom: spacing.sm },
   actions: { flexDirection: 'row', gap: spacing.sm },
   action: {
     flex: 1,
@@ -288,13 +285,15 @@ const s = StyleSheet.create({
     marginTop: spacing.md,
     height: 44,
     borderRadius: radius.pill,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
   },
-  bookingsText: { color: colors.white, fontFamily: font.bold, fontSize: 14, flex: 1, marginLeft: 2 },
+  bookingsText: { color: colors.primary, fontFamily: font.bold, fontSize: 14, flex: 1, marginLeft: 2 },
   section: {
     fontSize: 17,
     fontFamily: font.extrabold,

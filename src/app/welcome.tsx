@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import {
   Animated,
   Easing,
-  Image,
   Pressable,
   StyleSheet,
   Text,
@@ -15,446 +14,308 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { Redirect, router } from 'expo-router';
+import { useEventListener } from 'expo';
+import { useVideoPlayer, VideoView } from 'expo-video';
 
 import { useAuth } from '@/auth/AuthContext';
 import { useI18n } from '@/i18n';
 import { LangSwitch } from '@/components/LangSwitch';
-import { colors, font } from '@/theme';
+import { colors, font, radius, spacing } from '@/theme';
 
-const LOGO = require('@/assets/images/image.png');
+// Séquence de marque officielle (fournie par le client) : logotype « WDA »
+// prolongé par une flèche, « WIDRIVE AFRICA » entre deux traits fins, puis
+// le slogan. Le slogan est incrusté dans la vidéo : on recadre donc l'image
+// sur le logotype et on affiche le slogan en texte, traduit (FR / EN).
+const INTRO = require('@/assets/videos/intro.mp4');
 
+type Player = ReturnType<typeof useVideoPlayer>;
+
+// Le lecteur est un objet partagé dont on pilote l'état par mutation :
+// on isole la mutation ici pour ne pas la faire dans le corps du composant.
+function setPlayerMuted(player: Player, muted: boolean) {
+  player.muted = muted;
+}
+
+// Repères du logotype dans la vidéo (1080 × 1920), mesurés sur l'image :
+// logotype y 826–979, « WIDRIVE AFRICA » y 999–1031, slogan y 1044–1066.
+const VIDEO_W = 1080;
+const VIDEO_H = 1920;
+const BAND_TOP = 794;
+const BAND_BOTTOM = 1038;
+const ZOOM = 1.2;
+const MAX_FRAME = 760;
+
+/**
+ * Écran d'ouverture WIDRIVE.
+ * Joue la séquence de marque cadrée sur le logotype, affiche le slogan dans
+ * la langue choisie, puis révèle le bouton « CONTINUER ».
+ */
 export default function Welcome() {
   const { phone } = useAuth();
   const { t } = useI18n();
   const { width } = useWindowDimensions();
 
-  // Valeurs d'animation stables (initialisateur paresseux : identité conservée
-  // entre les rendus, sans être des refs lues pendant le rendu).
-  const [logoOpacity] = useState(() => new Animated.Value(0));
-  const [logoScale] = useState(() => new Animated.Value(0.85));
+  const [revealed, setRevealed] = useState(false);
+  const [muted, setMuted] = useState(true);
 
-  const [sloganOpacity] = useState(() => new Animated.Value(0));
-  const [sloganY] = useState(() => new Animated.Value(20));
+  const player = useVideoPlayer(INTRO, (p) => {
+    p.loop = false;
+    // La lecture automatique n'est autorisée qu'en mode muet sur le web.
+    p.muted = true;
+  });
 
-  const [subtitleOpacity] = useState(() => new Animated.Value(0));
+  const [ctaOpacity] = useState(() => new Animated.Value(0));
+  const [ctaY] = useState(() => new Animated.Value(18));
+  const [taglineOpacity] = useState(() => new Animated.Value(0));
 
-  const [buttonOpacity] = useState(() => new Animated.Value(0));
-  const [buttonY] = useState(() => new Animated.Value(25));
-  const [buttonPulse] = useState(() => new Animated.Value(0));
+  // Sur le web, la vue vidéo n'est attachée au lecteur qu'après le montage :
+  // on lance donc la lecture depuis un effet, une fois le lecteur en place.
+  useEffect(() => {
+    player.play();
+  }, [player]);
+
+  useEventListener(player, 'playToEnd', () => setRevealed(true));
+
+  // Le slogan apparaît immédiatement (léger fondu), sans attendre la fin de
+  // la vidéo : l'écran n'a plus de temps mort avant le texte.
+  useEffect(() => {
+    const anim = Animated.timing(taglineOpacity, {
+      toValue: 1,
+      duration: 550,
+      delay: 200,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    });
+
+    anim.start();
+
+    return () => anim.stop();
+  }, [taglineOpacity]);
+
+  // Filet de sécurité : si la lecture automatique est bloquée par le
+  // navigateur, on révèle le bouton après la durée de la vidéo.
+  useEffect(() => {
+    const timer = setTimeout(() => setRevealed(true), 7000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
-    const animation = Animated.sequence([
-      Animated.parallel([
-        Animated.timing(logoOpacity, {
-          toValue: 1,
-          duration: 1100,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
+    if (!revealed) return;
 
-        Animated.spring(logoScale, {
-          toValue: 1,
-          speed: 1,
-          bounciness: 5,
-          useNativeDriver: true,
-        }),
-      ]),
-
-      Animated.parallel([
-        Animated.timing(sloganOpacity, {
-          toValue: 1,
-          duration: 750,
-          useNativeDriver: true,
-        }),
-
-        Animated.timing(sloganY, {
-          toValue: 0,
-          duration: 750,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-      ]),
-
-      Animated.timing(subtitleOpacity, {
+    const anim = Animated.parallel([
+      Animated.timing(ctaOpacity, {
         toValue: 1,
-        duration: 700,
+        duration: 650,
+        easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
 
-      Animated.delay(300),
-
-      Animated.parallel([
-        Animated.timing(buttonOpacity, {
-          toValue: 1,
-          duration: 700,
-          useNativeDriver: true,
-        }),
-
-        Animated.spring(buttonY, {
-          toValue: 0,
-          speed: 1,
-          bounciness: 5,
-          useNativeDriver: true,
-        }),
-      ]),
+      Animated.timing(ctaY, {
+        toValue: 0,
+        duration: 650,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
     ]);
 
-    animation.start();
+    anim.start();
 
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(buttonPulse, {
-          toValue: 1,
-          duration: 1300,
-          useNativeDriver: true,
-        }),
+    return () => anim.stop();
+  }, [revealed, ctaOpacity, ctaY]);
 
-        Animated.timing(buttonPulse, {
-          toValue: 0,
-          duration: 1300,
-          useNativeDriver: true,
-        }),
-      ]),
-    );
+  const toggleSound = () => {
+    const next = !muted;
+    setPlayerMuted(player, next);
+    setMuted(next);
+  };
 
-    const timer = setTimeout(() => {
-      pulse.start();
-    }, 4500);
-
-    return () => {
-      animation.stop();
-      pulse.stop();
-      clearTimeout(timer);
-    };
-  }, [
-    logoOpacity,
-    logoScale,
-    sloganOpacity,
-    sloganY,
-    subtitleOpacity,
-    buttonOpacity,
-    buttonY,
-    buttonPulse,
-  ]);
+  // Cadrage : on agrandit la vidéo pour que le logotype soit bien visible,
+  // puis on ne montre que la bande qui le contient.
+  const frameWidth = Math.min(width, MAX_FRAME);
+  const videoWidth = frameWidth * ZOOM;
+  const videoHeight = (videoWidth * VIDEO_H) / VIDEO_W;
+  const frameHeight = (videoHeight * (BAND_BOTTOM - BAND_TOP)) / VIDEO_H;
 
   if (phone) {
     return <Redirect href={'/' as never} />;
   }
 
-  const pulseScale = buttonPulse.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 1.025],
-  });
-
   return (
     <View style={styles.screen}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
 
-      {/* ÉLÉMENTS DÉCORATIFS */}
-
-      <View pointerEvents="none" style={styles.glowTop} />
-      <View pointerEvents="none" style={styles.glowBottom} />
-      <View pointerEvents="none" style={styles.decorCircle} />
-
-      <SafeAreaView style={styles.safe}>
-
-        {/* BARRE SUPÉRIEURE */}
-
+      <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+        {/* BARRE HAUTE */}
         <View style={styles.topBar}>
-          <View style={styles.languageContainer}>
-            <LangSwitch dark />
-          </View>
+          <Pressable
+            onPress={toggleSound}
+            style={({ pressed }) => [styles.sound, pressed && styles.pressed]}
+            accessibilityRole="button"
+            accessibilityLabel={muted ? t('welcome.soundOn') : t('welcome.soundOff')}
+          >
+            <Ionicons
+              name={muted ? 'volume-mute' : 'volume-high'}
+              size={17}
+              color={colors.primary}
+            />
+          </Pressable>
+
+          <LangSwitch />
         </View>
 
-        {/* CONTENU PRINCIPAL */}
-
-        <View style={styles.content}>
-
-          <Animated.View
-            style={[
-              styles.logoCard,
-              {
-                width: Math.min(width - 44, 400),
-                opacity: logoOpacity,
-                transform: [{ scale: logoScale }],
-              },
-            ]}
+        {/* SÉQUENCE VIDÉO + SLOGAN */}
+        <View style={styles.center}>
+          <View
+            style={[styles.frame, { width: frameWidth, height: frameHeight }]}
           >
-            <Image
-              source={LOGO}
-              style={styles.logo}
-              resizeMode="contain"
-              accessibilityLabel="Logo WIDRIVE AFRICA"
+            <VideoView
+              player={player}
+              style={[
+                styles.video,
+                {
+                  width: videoWidth,
+                  height: videoHeight,
+                  left: -(videoWidth - frameWidth) / 2,
+                  top: -(videoHeight * BAND_TOP) / VIDEO_H,
+                },
+              ]}
+              contentFit="contain"
+              nativeControls={false}
+              playsInline
+              accessibilityLabel="WIDRIVE AFRICA"
             />
-          </Animated.View>
-
-          {/* IDENTITÉ */}
-
-          <Animated.View
-            style={[
-              styles.sloganContainer,
-              {
-                opacity: sloganOpacity,
-                transform: [{ translateY: sloganY }],
-              },
-            ]}
-          >
-            <Text style={styles.slogan}>
-              {t('app.tagline').split('\n')[0]}
-            </Text>
-
-            <Text style={styles.sloganAccent}>
-              {t('app.tagline').split('\n')[1]}
-            </Text>
-          </Animated.View>
-
-          <Animated.Text
-            style={[
-              styles.subtitle,
-              { opacity: subtitleOpacity },
-            ]}
-          >
-            {t('app.taglineSub')}
-          </Animated.Text>
-
-          {/* INDICATEUR DÉCORATIF */}
-
-          <View style={styles.indicator}>
-            <View style={styles.indicatorActive} />
-            <View style={styles.indicatorInactive} />
-            <View style={styles.indicatorInactive} />
           </View>
 
-          {/* BOUTON */}
-
           <Animated.View
-            style={[
-              styles.buttonWrap,
-              {
-                opacity: buttonOpacity,
-                transform: [
-                  { translateY: buttonY },
-                  { scale: pulseScale },
-                ],
-              },
-            ]}
+            style={[styles.taglineRow, { opacity: taglineOpacity }]}
+            pointerEvents="none"
           >
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => router.push('/login' as never)}
-              style={({ pressed }) => [
-                styles.cta,
-                pressed && styles.ctaPressed,
-              ]}
-            >
-              <Text style={styles.ctaText}>
-                {t('welcome.continue')}
-              </Text>
+            <View style={styles.taglineRule} />
 
-              <View style={styles.arrowCircle}>
-                <Ionicons
-                  name="arrow-forward"
-                  size={19}
-                  color={colors.white}
-                />
-              </View>
-            </Pressable>
+            <Text style={styles.taglineText}>{t('welcome.tagline')}</Text>
+
+            <View style={styles.taglineRule} />
           </Animated.View>
+        </View>
 
-          {/* MESSAGE DE CONFIANCE */}
+        {/* BOUTON */}
+        <Animated.View
+          style={[
+            styles.bottom,
+            {
+              opacity: ctaOpacity,
+              transform: [{ translateY: ctaY }],
+            },
+          ]}
+          pointerEvents={revealed ? 'auto' : 'none'}
+        >
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push('/login' as never)}
+            style={({ pressed }) => [styles.cta, pressed && styles.ctaPressed]}
+          >
+            <Text style={styles.ctaText}>{t('welcome.continue')}</Text>
+
+            <Ionicons name="arrow-forward" size={18} color={colors.white} />
+          </Pressable>
 
           <View style={styles.trustRow}>
             <Ionicons
               name="shield-checkmark-outline"
-              size={15}
-              color={colors.accentSoft}
+              size={14}
+              color={colors.textMuted}
             />
 
-            <Text style={styles.trustText}>
-              {t('welcome.trust')}
-            </Text>
+            <Text style={styles.trustText}>{t('welcome.trust')}</Text>
           </View>
-
-        </View>
-
-        {/* PIED DE PAGE */}
-
-        <View style={styles.footer}>
-          <View style={styles.footerLine} />
-
-          <Text style={styles.footerText}>
-            WIDRIVE AFRICA
-          </Text>
-
-          <View style={styles.footerLine} />
-        </View>
-
+        </Animated.View>
       </SafeAreaView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-
   screen: {
     flex: 1,
-    backgroundColor: colors.primary,
-    overflow: 'hidden',
+    backgroundColor: colors.white,
   },
 
   safe: {
     flex: 1,
   },
 
-  glowTop: {
-    position: 'absolute',
-    width: 390,
-    height: 390,
-    borderRadius: 195,
-    top: -210,
-    right: -130,
-    backgroundColor: colors.accent,
-    opacity: 0.22,
-  },
-
-  glowBottom: {
-    position: 'absolute',
-    width: 350,
-    height: 350,
-    borderRadius: 175,
-    bottom: -190,
-    left: -130,
-    backgroundColor: colors.accent,
-    opacity: 0.13,
-  },
-
-  decorCircle: {
-    position: 'absolute',
-    width: 230,
-    height: 230,
-    borderRadius: 115,
-    borderWidth: 1,
-    borderColor: colors.darkBorder,
-    right: -130,
-    bottom: 90,
-    opacity: 0.2,
-  },
-
   topBar: {
-    height: 58,
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    paddingHorizontal: 19,
-  },
-
-  languageContainer: {
-    backgroundColor: colors.darkSurfaceAlt,
-    borderRadius: 12,
-    paddingHorizontal: 5,
-  },
-
-  content: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 22,
-    paddingBottom: 12,
-  },
-
-  logoCard: {
-    height: 155,
-    backgroundColor: colors.surface,
-    borderRadius: 22,
-    paddingHorizontal: 15,
-    paddingVertical: 14,
-    justifyContent: 'center',
-    marginBottom: 43,
-
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.25,
-    shadowRadius: 22,
-    elevation: 10,
-  },
-
-  logo: {
-    width: '100%',
-    height: '100%',
-  },
-
-  sloganContainer: {
-    alignItems: 'center',
-  },
-
-  slogan: {
-    color: colors.white,
-    fontSize: 29,
-    lineHeight: 39,
-    fontFamily: font.extrabold,
-    textAlign: 'center',
-    letterSpacing: 0.2,
-  },
-
-  sloganAccent: {
-    color: colors.accentSoft,
-    fontSize: 29,
-    lineHeight: 39,
-    fontFamily: font.extrabold,
-    textAlign: 'center',
-    letterSpacing: 0.2,
-  },
-
-  subtitle: {
-    color: colors.onDarkMuted,
-    fontSize: 14,
-    marginTop: 15,
-    letterSpacing: 0.4,
-    textAlign: 'center',
-  },
-
-  indicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 27,
-  },
-
-  indicatorActive: {
-    width: 24,
-    height: 5,
-    borderRadius: 5,
-    backgroundColor: colors.accent,
-  },
-
-  indicatorInactive: {
-    width: 6,
-    height: 5,
-    borderRadius: 5,
-    backgroundColor: colors.darkBorder,
-  },
-
-  buttonWrap: {
-    width: '100%',
-    maxWidth: 330,
-    marginTop: 36,
-  },
-
-  cta: {
-    minHeight: 61,
-    borderRadius: 18,
-    backgroundColor: colors.accent,
-    paddingLeft: 25,
-    paddingRight: 9,
-
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+  },
 
-    shadowColor: colors.accent,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 15,
-    elevation: 7,
+  sound: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.surfaceAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  center: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xl,
+  },
+
+  frame: {
+    overflow: 'hidden',
+    alignSelf: 'center',
+  },
+
+  video: {
+    position: 'absolute',
+  },
+
+  taglineRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingHorizontal: spacing.lg,
+  },
+
+  taglineRule: {
+    width: 22,
+    height: 1.5,
+    borderRadius: 1,
+    backgroundColor: colors.accent,
+  },
+
+  taglineText: {
+    color: colors.primary,
+    fontSize: 13,
+    fontFamily: font.semibold,
+    letterSpacing: 0.3,
+    textAlign: 'center',
+  },
+
+  bottom: {
+    paddingHorizontal: spacing.xxl,
+    paddingBottom: spacing.xl,
+    alignItems: 'center',
+    gap: spacing.lg,
+  },
+
+  cta: {
+    width: '100%',
+    maxWidth: 330,
+    minHeight: 56,
+    borderRadius: radius.pill,
+    backgroundColor: colors.accent,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
   },
 
   ctaPressed: {
@@ -468,48 +329,18 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
 
-  arrowCircle: {
-    width: 43,
-    height: 43,
-    borderRadius: 14,
-    backgroundColor: colors.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
   trustRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 7,
-    marginTop: 23,
   },
 
   trustText: {
-    color: colors.accentSoft,
+    color: colors.textMuted,
     fontSize: 11,
-    letterSpacing: 0.2,
   },
 
-  footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-    paddingBottom: 17,
+  pressed: {
+    opacity: 0.6,
   },
-
-  footerLine: {
-    height: 1,
-    width: 28,
-    backgroundColor: colors.darkBorder,
-    opacity: 0.7,
-  },
-
-  footerText: {
-    color: colors.onDarkMuted,
-    fontSize: 9,
-    letterSpacing: 2.8,
-    fontFamily: font.bold,
-  },
-
 });
