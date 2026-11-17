@@ -1,5 +1,5 @@
 import type { ImageSourcePropType } from 'react-native';
-import { images, photoSet } from '@/data/images';
+import { images } from '@/data/images';
 import type { L } from '@/i18n';
 
 export const SUPPORT_WHATSAPP = '2290199003132'; // à confirmer avec le client
@@ -32,7 +32,7 @@ export const rentals: Rental[] = [
   {
     id: 'r1', name: 'Toyota Yaris', category: 'city', seats: 5, gearbox: 'manual', fuel: 'petrol',
     pricePerDay: 20000, image: images.rentals.yaris,
-    photos: photoSet(['wid-yaris-1', 'wid-yaris-2', 'wid-yaris-3', 'wid-yaris-4']),
+    photos: [images.rentals.yaris, ...images.carInterior],
     city: { fr: 'Godomey · Calavi', en: 'Godomey · Calavi' }, lat: 6.3889, lng: 2.345, rating: 4.8, reviews: 24,
     description: {
       fr: 'Citadine économique et facile à conduire, parfaite pour vos déplacements en ville. Climatisation, Bluetooth et faible consommation.',
@@ -43,7 +43,7 @@ export const rentals: Rental[] = [
   {
     id: 'r2', name: 'Toyota Corolla', category: 'sedan', seats: 5, gearbox: 'auto', fuel: 'petrol',
     pricePerDay: 30000, image: images.rentals.corolla,
-    photos: photoSet(['wid-corolla-1', 'wid-corolla-2', 'wid-corolla-3', 'wid-corolla-4']),
+    photos: [images.rentals.corolla, ...images.carInterior],
     city: { fr: 'Calavi centre · Calavi', en: 'Calavi centre · Calavi' }, lat: 6.4489, lng: 2.3556, rating: 4.9, reviews: 31,
     description: {
       fr: 'Berline confortable et spacieuse, idéale pour les trajets professionnels comme pour les sorties en famille.',
@@ -54,7 +54,7 @@ export const rentals: Rental[] = [
   {
     id: 'r3', name: 'Toyota RAV4', category: 'suv', seats: 5, gearbox: 'auto', fuel: 'petrol',
     pricePerDay: 45000, image: images.rentals.rav4,
-    photos: photoSet(['wid-rav4-1', 'wid-rav4-2', 'wid-rav4-3', 'wid-rav4-4']),
+    photos: [images.rentals.rav4, ...images.carInterior],
     city: { fr: 'Arconville · Calavi', en: 'Arconville · Calavi' }, lat: 6.4406, lng: 2.3811, rating: 4.9, reviews: 18,
     description: {
       fr: 'SUV robuste et confortable, adapté aux routes urbaines comme aux pistes. Grand coffre et position de conduite surélevée.',
@@ -65,7 +65,7 @@ export const rentals: Rental[] = [
   {
     id: 'r4', name: 'Toyota Hilux', category: 'pickup', seats: 5, gearbox: 'manual', fuel: 'diesel',
     pricePerDay: 55000, image: images.rentals.hilux,
-    photos: photoSet(['wid-hilux-1', 'wid-hilux-2', 'wid-hilux-3', 'wid-hilux-4']),
+    photos: [images.rentals.hilux, ...images.carInterior],
     city: { fr: 'Akassato · Calavi', en: 'Akassato · Calavi' }, lat: 6.4936, lng: 2.3619, rating: 4.7, reviews: 12,
     description: {
       fr: 'Pick-up 4x4 puissant pour les chantiers et les missions hors ville. Robuste, fiable et prêt à tout terrain.',
@@ -76,7 +76,7 @@ export const rentals: Rental[] = [
   {
     id: 'r5', name: 'Hyundai H1', category: 'minibus', seats: 9, gearbox: 'manual', fuel: 'diesel',
     pricePerDay: 60000, image: images.rentals.h1,
-    photos: photoSet(['wid-h1-1', 'wid-h1-2', 'wid-h1-3', 'wid-h1-4']),
+    photos: [images.rentals.h1, ...images.carInterior],
     city: { fr: 'Tankpè · Calavi', en: 'Tankpè · Calavi' }, lat: 6.4319, lng: 2.3389, rating: 4.8, reviews: 9,
     description: {
       fr: 'Minibus 9 places climatisé, parfait pour les groupes, les navettes et les transferts aéroport.',
@@ -115,8 +115,20 @@ export type Apartment = {
   reviews: number;
 };
 
-const rooms = (prefix: string, list: AptRoom[]): AptPhoto[] =>
-  list.map((room) => ({ room, source: photoSet([`${prefix}-${room}`])[0] }));
+const roomSource = (room: AptRoom, facade: ImageSourcePropType): ImageSourcePropType => {
+  switch (room) {
+    case 'salon': return images.rooms.salon;
+    case 'chambre': return images.rooms.chambre;
+    case 'cuisine': return images.rooms.cuisine;
+    case 'sdb': return images.rooms.sdb;
+    case 'facade':
+    case 'exterieur':
+    default: return facade;
+  }
+};
+
+const rooms = (facade: ImageSourcePropType, list: AptRoom[]): AptPhoto[] =>
+  list.map((room) => ({ room, source: roomSource(room, facade) }));
 
 export const apartments: Apartment[] = [
   {
@@ -132,7 +144,7 @@ export const apartments: Apartment[] = [
       en: 'Modern, bright, fully furnished studio close to shops and restaurants. Comfortable living area, equipped kitchenette and private bathroom. Ideal for a short or medium stay.',
     },
     image: images.apartments.studio, lat: 6.46, lng: 2.37, rating: 4.9, reviews: 19,
-    photos: rooms('wid-a1', ['facade', 'salon', 'chambre', 'cuisine', 'sdb', 'exterieur']),
+    photos: rooms(images.apartments.studio, ['facade', 'salon', 'chambre', 'cuisine', 'sdb']),
   },
   {
     id: 'a2', type: 'two',
@@ -147,7 +159,7 @@ export const apartments: Apartment[] = [
       en: 'Quiet apartment a few minutes from the beach, with an equipped kitchen and spacious living room. Private parking and a generator for uninterrupted comfort.',
     },
     image: images.apartments.deux, lat: 6.3889, lng: 2.345, rating: 4.8, reviews: 27,
-    photos: rooms('wid-a2', ['facade', 'salon', 'chambre', 'cuisine', 'sdb', 'exterieur']),
+    photos: rooms(images.apartments.deux, ['facade', 'salon', 'chambre', 'cuisine', 'sdb']),
   },
   {
     id: 'a3', type: 'three',
@@ -162,7 +174,7 @@ export const apartments: Apartment[] = [
       en: 'Large family apartment with a spacious living room, balcony and three bedrooms. Secure residence with a guard, close to schools and shops.',
     },
     image: images.apartments.trois, lat: 6.4406, lng: 2.3811, rating: 4.9, reviews: 15,
-    photos: rooms('wid-a3', ['facade', 'salon', 'chambre', 'cuisine', 'sdb', 'exterieur']),
+    photos: rooms(images.apartments.trois, ['facade', 'salon', 'chambre', 'cuisine', 'sdb']),
   },
   {
     id: 'a4', type: 'villa',
@@ -177,7 +189,7 @@ export const apartments: Apartment[] = [
       en: 'Secure villa with a landscaped garden, ideal for a family or a company. Four bedrooms, large living room, equipped kitchen and staff quarters.',
     },
     image: images.apartments.villa, lat: 6.5006, lng: 2.3322, rating: 5.0, reviews: 8,
-    photos: rooms('wid-a4', ['facade', 'salon', 'chambre', 'cuisine', 'sdb', 'exterieur']),
+    photos: rooms(images.apartments.villa, ['facade', 'salon', 'chambre', 'cuisine', 'sdb']),
   },
 ];
 
