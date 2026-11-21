@@ -5,7 +5,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Screen } from '@/components/Screen';
 import { colors, font, radius, spacing } from '@/theme';
 import { useI18n } from '@/i18n';
-import { deposit, money, useWallet, withdraw, type TxMethod } from '@/lib/wallet';
+import { money, requestWithdrawal, useWallet, type TxMethod } from '@/lib/wallet';
 
 type Mode = 'dep' | 'ret';
 
@@ -31,22 +31,25 @@ export default function Transfer() {
   const tooBig = !isDeposit && value > balance;
   const valid = value >= MIN && !tooBig;
 
-  const submit = () => {
+  const submit = async () => {
     if (!valid) {
       setError(tooSmall ? t('tf.min', { amount: money(MIN) }) : t('tf.max', { amount: money(balance) }));
       return;
     }
     setError(null);
+    if (isDeposit) {
+      // Recharge réelle : nécessite un agrégateur Mobile Money (indisponible pour l'instant).
+      setError(t('tf.topupSoon'));
+      return;
+    }
     setStatus('busy');
-    setTimeout(() => {
-      if (isDeposit) deposit(value, method);
-      else if (!withdraw(value, method)) {
-        setStatus('idle');
-        setError(t('tf.max', { amount: money(balance) }));
-        return;
-      }
-      setStatus('done');
-    }, 1100);
+    const r = await requestWithdrawal(value, method);
+    if (r !== 'ok') {
+      setStatus('idle');
+      setError(r === 'insufficient' ? t('tf.max', { amount: money(balance) }) : t('bk.err.generic'));
+      return;
+    }
+    setStatus('done');
   };
 
   if (status === 'done') {

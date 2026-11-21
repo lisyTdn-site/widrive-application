@@ -3,7 +3,8 @@ import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { colors, font, radius } from '@/theme';
-import { chargeWallet, money, useWallet } from '@/lib/wallet';
+import { money, payBookingWithWallet, useWallet, WALLET_TOPUP_ENABLED } from '@/lib/wallet';
+import { refreshBookings } from '@/lib/bookings';
 import { useI18n } from '@/i18n';
 
 export type PayMode = 'deposit' | 'full';
@@ -15,11 +16,13 @@ type Props = {
   amount: number;
   /** Si fourni, l'utilisateur peut choisir de payer un acompte. */
   deposit?: number;
+  /** Réservation à payer (créée côté serveur). */
+  bookingId?: string;
   onClose: () => void;
   onPaid?: (info: PayInfo) => void;
 };
 
-export function PaySheet({ visible, title, amount, deposit, onClose, onPaid }: Props) {
+export function PaySheet({ visible, title, amount, deposit, bookingId, onClose, onPaid }: Props) {
   const { t } = useI18n();
   const { balance } = useWallet();
   const hasDeposit = deposit != null && deposit > 0 && deposit < amount;
@@ -27,6 +30,7 @@ export function PaySheet({ visible, title, amount, deposit, onClose, onPaid }: P
   const [mode, setMode] = useState<PayMode>(hasDeposit ? 'deposit' : 'full');
   const [method, setMethod] = useState<'wallet' | 'momo'>('wallet');
   const [status, setStatus] = useState<'idle' | 'busy' | 'done'>('idle');
+  const [payError, setPayError] = useState<string | null>(null);
 
   // À chaque ouverture, on repart d'un état propre (ajustement pendant le rendu,
   // pas d'effet : évite les rendus en cascade).
@@ -49,13 +53,19 @@ export function PaySheet({ visible, title, amount, deposit, onClose, onPaid }: P
     onClose();
   };
 
-  const pay = () => {
+  const pay = async () => {
+    if (!bookingId || method !== 'wallet') return;
     setStatus('busy');
-    setTimeout(() => {
-      if (method === 'wallet') chargeWallet(payAmount, t('pay.txLabel', { title }));
-      setStatus('done');
-      onPaid?.({ amount: payAmount, method, mode });
-    }, 1200);
+    setPayError(null);
+    const r = await payBookingWithWallet(bookingId, mode === 'full' || !hasDeposit);
+    if (r !== 'ok') {
+      setStatus('idle');
+      setPayError(r === 'insufficient' ? t('pay.insufficient') : t('bk.err.generic'));
+      return;
+    }
+    await refreshBookings();
+    setStatus('done');
+    onPaid?.({ amount: payAmount, method, mode });
   };
 
   const remaining = amount - payAmount;
@@ -128,11 +138,15 @@ export function PaySheet({ visible, title, amount, deposit, onClose, onPaid }: P
                 <View style={[s.radio, method === 'wallet' && s.radioOn]} />
               </Pressable>
 
-              <Pressable onPress={() => setMethod('momo')} style={[s.opt, method === 'momo' && s.optOn]}>
+              <Pressable
+                disabled={!WALLET_TOPUP_ENABLED}
+                onPress={() => setMethod('momo')}
+                style={[s.opt, method === 'momo' && s.optOn, !WALLET_TOPUP_ENABLED && { opacity: 0.5 }]}
+              >
                 <Ionicons name="phone-portrait-outline" size={24} color={colors.primary} />
                 <View style={{ flex: 1 }}>
                   <Text style={s.optTitle}>{t('pay.momo')}</Text>
-                  <Text style={s.optSub}>{t('pay.momoSub')}</Text>
+                  <Text style={s.optSub}>{WALLET_TOPUP_ENABLED ? t('pay.momoSub') : t('pay.momoSoon')}</Text>
                 </View>
                 <View style={[s.radio, method === 'momo' && s.radioOn]} />
               </Pressable>
@@ -146,9 +160,10 @@ export function PaySheet({ visible, title, amount, deposit, onClose, onPaid }: P
                 </Pressable>
               )}
               {method === 'momo' && <Text style={s.hint}>{t('pay.momoHint')}</Text>}
+              {payError ? <Text style={s.warn}>{payError}</Text> : null}
 
               <Pressable
-                disabled={blocked || status === 'busy'}
+                disabled={blocked || status === 'busy' || !bookingId || method !== 'wallet'}
                 onPress={pay}
                 style={[s.cta, (blocked || status === 'busy') && { opacity: 0.5 }]}
               >

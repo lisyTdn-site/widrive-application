@@ -7,7 +7,7 @@ import { Chips } from '@/components/Chips';
 import { Img } from '@/components/Img';
 import { Spec } from '@/components/Spec';
 import { ZoneMap } from '@/components/ZoneMap';
-import { rentals } from '@/data/catalog';
+import { useRentals } from '@/lib/catalogListings';
 import { CALAVI } from '@/data/zones';
 import { money } from '@/lib/wallet';
 import { useI18n, type Key } from '@/i18n';
@@ -19,6 +19,7 @@ type Cat = (typeof CATS)[number];
 export default function Location() {
   const { t, lang, tr } = useI18n();
   const [cat, setCat] = useState<Cat>('all');
+  const { data: rentals } = useRentals();
   const list = rentals.filter((r) => cat === 'all' || r.category === cat);
   const catLabel = (c: Cat) => (c === 'all' ? t('common.all') : t(`rent.cat.${c}` as Key));
 

@@ -1,8 +1,11 @@
-// Réservations (location de véhicules + logements), persistées localement.
-// Le calendrier lit `activeBookings` pour savoir quels créneaux sont occupés :
-// dès qu'une réservation est confirmée (paiement), le créneau est bloqué.
+// Réservations (location de véhicules + logements), lues et écrites via Supabase.
+// Montant, acompte et disponibilité sont décidés par le SERVEUR (RPC `create_booking`,
+// contrainte anti-chevauchement) ; le client n'affiche que ce que le serveur retourne.
+// Le calendrier lit `useBookings()` = mes réservations + créneaux occupés par les autres
+// (`get_all_busy_slots`, sans donnée personnelle).
 
-import { createStore, uid, useStore } from '@/lib/store';
+import { getSupabase } from '@/lib/supabase';
+import { createLiveStore, useStore } from '@/lib/store';
 import type { TxMethod } from '@/lib/wallet';
 
 export type BookingKind = 'rental' | 'housing';
@@ -28,95 +31,98 @@ export type Booking = {
   createdAt: number;
 };
 
-type BookingsState = { items: Booking[] };
+type BookingsState = { mine: Booking[]; busy: Booking[] };
 
-const atDay = (offset: number, hour: number): number => {
-  const d = new Date();
-  d.setDate(d.getDate() + offset);
-  d.setHours(hour, 0, 0, 0);
-  return d.getTime();
-};
+export const bookings = createLiveStore<BookingsState>({ mine: [], busy: [] });
 
-const makeRef = () => `WD-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
-
-// Créneaux de démonstration déjà réservés (pour voir le calendrier se remplir).
-const seedItem = (
-  id: string,
-  kind: BookingKind,
-  listingId: string,
-  title: string,
-  start: number,
-  end: number,
-  amount: number
-): Booking => ({
-  id,
-  ref: makeRef(),
-  kind,
-  listingId,
-  title,
-  start,
-  end,
-  amount,
-  deposit: Math.round(amount * 0.3),
-  paid: amount,
-  method: 'momo',
-  status: 'confirmed',
-  createdAt: Date.now(),
-});
-
-const seed: BookingsState = {
-  items: [
-    seedItem('bk_seed_1', 'rental', 'r1', 'Toyota Yaris', atDay(1, 9), atDay(1, 18), 20000),
-    seedItem('bk_seed_2', 'rental', 'r1', 'Toyota Yaris', atDay(3, 8), atDay(4, 12), 40000),
-    seedItem('bk_seed_3', 'rental', 'r3', 'Toyota RAV4', atDay(2, 10), atDay(2, 16), 45000),
-    seedItem('bk_seed_4', 'housing', 'a1', 'Studio meublé', atDay(1, 10), atDay(1, 13), 150000),
-    seedItem('bk_seed_5', 'housing', 'a1', 'Studio meublé', atDay(5, 14), atDay(5, 17), 150000),
-    seedItem('bk_seed_6', 'housing', 'a2', 'Appartement 2 pièces', atDay(2, 9), atDay(2, 11), 250000),
-  ],
-};
-
-export const bookings = createStore<BookingsState>('wid_bookings_v1', seed);
-
+/** Mes réservations + créneaux occupés (pour les calendriers). */
 export function useBookings(): Booking[] {
-  return useStore(bookings).items;
+  const st = useStore(bookings);
+  return [...st.mine, ...st.busy];
 }
 
-export type NewBooking = {
-  kind: BookingKind;
-  listingId: string;
-  title: string;
-  start: number;
-  end: number;
-  amount: number;
-  deposit: number;
-  method: TxMethod;
-  status: BookingStatus;
-  paid: number;
-};
-
-export function createBooking(input: NewBooking): Booking {
-  const booking: Booking = {
-    ...input,
-    id: uid('bk'),
-    ref: makeRef(),
-    createdAt: Date.now(),
-  };
-  bookings.set((prev) => ({ items: [booking, ...prev.items] }));
-  return booking;
+export function useMyBookings(): Booking[] {
+  return useStore(bookings).mine;
 }
 
-export function updateBooking(id: string, patch: Partial<Booking>): void {
-  bookings.set((prev) => ({
-    items: prev.items.map((b) => (b.id === id ? { ...b, ...patch } : b)),
-  }));
+export function resetBookings(): void {
+  bookings.set({ mine: [], busy: [] });
 }
 
-export function confirmBooking(id: string, paid: number, method: TxMethod): void {
-  updateBooking(id, { status: 'confirmed', paid, method });
+const DAY = 86_400_000;
+
+export async function refreshBookings(): Promise<void> {
+  const sb = getSupabase();
+  const now = Date.now();
+  const [mine, busy] = await Promise.all([
+    sb.from('bookings').select('*, listings(legacy_id, kind)').order('created_at', { ascending: false }),
+    sb.rpc('get_all_busy_slots', {
+      p_from: new Date(now - DAY).toISOString(),
+      p_to: new Date(now + 400 * DAY).toISOString(),
+    }),
+  ]);
+  if (mine.error || busy.error) return;
+  bookings.set({
+    mine: (mine.data ?? []).map((r) => ({
+      id: r.id,
+      ref: r.ref,
+      kind: r.listings?.kind === 'housing' ? 'housing' : 'rental',
+      listingId: r.listings?.legacy_id ?? r.listing_id,
+      title: r.title_snapshot,
+      start: new Date(r.start_at).getTime(),
+      end: new Date(r.end_at).getTime(),
+      amount: r.amount,
+      deposit: r.deposit,
+      paid: r.paid,
+      method: (r.method ?? 'wallet') as TxMethod,
+      status: r.status,
+      createdAt: new Date(r.created_at).getTime(),
+    })),
+    busy: (busy.data ?? []).map((r, i) => ({
+      id: `busy_${i}`,
+      ref: '',
+      kind: 'rental' as const,
+      listingId: r.listing_ref,
+      title: '',
+      start: new Date(r.start_at).getTime(),
+      end: new Date(r.end_at).getTime(),
+      amount: 0,
+      deposit: 0,
+      paid: 0,
+      method: 'wallet' as const,
+      status: 'confirmed' as const,
+      createdAt: 0,
+    })),
+  });
 }
 
-export function cancelBooking(id: string): void {
-  updateBooking(id, { status: 'cancelled' });
+export type NewBooking = { listingId: string; start: number; end: number; withDriver?: boolean };
+export type BookingResult = { ok: true; booking: Booking } | { ok: false; error: 'unavailable' | 'blocked' | 'error' };
+
+/** Crée une réservation « pending » ; le serveur calcule montant et acompte. */
+export async function createBooking(input: NewBooking): Promise<BookingResult> {
+  const { data, error } = await getSupabase().rpc('create_booking', {
+    p_listing: input.listingId,
+    p_start: new Date(input.start).toISOString(),
+    p_end: new Date(input.end).toISOString(),
+    p_with_driver: !!input.withDriver,
+  });
+  if (error || !data) {
+    if (error && /slot_unavailable/.test(error.message)) return { ok: false, error: 'unavailable' };
+    if (error && /account_blocked/.test(error.message)) return { ok: false, error: 'blocked' };
+    return { ok: false, error: 'error' };
+  }
+  await refreshBookings();
+  const booking = bookings.get().mine.find((b) => b.id === data.id);
+  return booking ? { ok: true, booking } : { ok: false, error: 'error' };
+}
+
+/** Annule (remboursement du portefeuille fait côté serveur). */
+export async function cancelBooking(id: string): Promise<boolean> {
+  const { error } = await getSupabase().rpc('cancel_booking', { p_booking_id: id });
+  if (error) return false;
+  await refreshBookings();
+  return true;
 }
 
 /** Réservations qui occupent le calendrier (tout sauf annulées). */

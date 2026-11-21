@@ -8,7 +8,7 @@ import { colors, font } from '@/theme';
 
 const steps = ['trip.step1', 'trip.step2', 'trip.step3'] as const;
 const titles = ['trip.title1', 'trip.title2', 'trip.title3'] as const;
-const etas = ['5 min', '4 min', 'Maintenant'];
+const etas = ['5 min', '4 min'];
 
 const fmt = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 

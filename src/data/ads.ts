@@ -11,7 +11,7 @@ export const ads: Ad[] = [
     title: { fr: '-10 % sur ta première location', en: '10% off your first rental' },
     sub: { fr: 'Réserve en quelques clics', en: 'Book in a few taps' },
     image: images.ads.a1,
-    route: '/location',
+    route: '/rental/location',
   },
   {
     id: 'a2',

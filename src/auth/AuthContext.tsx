@@ -1,11 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
-type Account = { firstName: string; lastName: string; email: string; country: string; pin: string };
-type Accounts = Record<string, Account>;
+import { getSupabase } from '@/lib/supabase';
+import { refreshBookings, resetBookings } from '@/lib/bookings';
+import { refreshWallet, resetWallet } from '@/lib/wallet';
+
+type Profile = { firstName: string; lastName: string; email: string; country: string };
 type Remembered = { phone: string; country: string };
 
-export type AuthError = 'exists' | 'notfound' | 'badpin';
+export type AuthError = 'exists' | 'notfound' | 'badpin' | 'locked' | 'blocked' | 'network' | 'resetunavailable';
 type Result = { ok: true } | { ok: false; error: AuthError };
 
 export type User = { phone: string; firstName: string; lastName: string; email: string; country: string };
@@ -20,7 +23,6 @@ type AuthValue = {
   remembered: Remembered | null;
   rememberOn: boolean;
   setRemember: (on: boolean) => void;
-  hasAccount: (phone: string) => boolean;
   register: (input: RegisterInput, remember: boolean) => Promise<Result>;
   login: (phone: string, pin: string, remember: boolean) => Promise<Result>;
   resetPin: (phone: string, pin: string) => Promise<Result>;
@@ -28,14 +30,45 @@ type AuthValue = {
 };
 
 const AuthContext = createContext<AuthValue | null>(null);
-// Démo : stockage local. Avec le vrai backend, le PIN sera haché côté serveur.
-// La session reste en mémoire seulement : le PIN est redemandé à chaque ouverture.
-const K_ACCOUNTS = 'wid_accounts_v2';
+// Auth : téléphone + PIN via l'Edge Function `auth-pin` (le PIN n'est ni stocké ni haché ici :
+// il transite en TLS et est traité côté serveur). La session reste en mémoire côté UI :
+// le PIN est redemandé à chaque ouverture. Seuls téléphone + pays « mémorisés » sont en local.
 const K_REMEMBER = 'wid_remember_v1';
+
+type FnResponse = { session?: { access_token: string; refresh_token: string }; error?: string };
+
+async function callAuth(action: 'login' | 'register', body: Record<string, unknown>): Promise<FnResponse> {
+  try {
+    const { data, error } = await getSupabase().functions.invoke('auth-pin', { body: { action, ...body } });
+    if (error) {
+      // FunctionsHttpError : le corps JSON contient le code d'erreur.
+      const ctx = (error as { context?: Response }).context;
+      if (ctx && typeof ctx.json === 'function') {
+        try {
+          return (await ctx.json()) as FnResponse;
+        } catch {}
+      }
+      return { error: 'network' };
+    }
+    return data as FnResponse;
+  } catch {
+    return { error: 'network' };
+  }
+}
+
+function mapError(code?: string): AuthError {
+  switch (code) {
+    case 'phone_taken': return 'exists';
+    case 'locked': return 'locked';
+    case 'account_blocked': return 'blocked';
+    case 'invalid_credentials': return 'badpin';
+    default: return 'network';
+  }
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
-  const [accounts, setAccounts] = useState<Accounts>({});
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [phone, setPhone] = useState<string | null>(null);
   const [remembered, setRememberedState] = useState<Remembered | null>(null);
 
@@ -48,26 +81,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
     const timer = setTimeout(finish, 2000);
-
     (async () => {
       try {
-        const a = await AsyncStorage.getItem(K_ACCOUNTS);
         const r = await AsyncStorage.getItem(K_REMEMBER);
-        if (a) setAccounts(JSON.parse(a));
         if (r) setRememberedState(JSON.parse(r));
+        // Pas de reconnexion automatique : on purge toute session résiduelle.
+        await getSupabase().auth.signOut({ scope: 'local' });
       } catch {}
       finish();
     })();
-
     return () => clearTimeout(timer);
   }, []);
-
-  const saveAccounts = async (next: Accounts) => {
-    setAccounts(next);
-    try {
-      await AsyncStorage.setItem(K_ACCOUNTS, JSON.stringify(next));
-    } catch {}
-  };
 
   const persistRemember = (r: Remembered | null) => {
     setRememberedState(r);
@@ -75,51 +99,77 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     else AsyncStorage.removeItem(K_REMEMBER).catch(() => {});
   };
 
-  const hasAccount = (p: string) => !!accounts[p];
+  const openSession = async (session: NonNullable<FnResponse['session']>) => {
+    const sb = getSupabase();
+    const { error } = await sb.auth.setSession(session);
+    return !error;
+  };
+
+  const loadProfile = async (fallbackCountry: string): Promise<Profile> => {
+    const { data } = await getSupabase()
+      .from('profiles')
+      .select('first_name,last_name,email,country_code')
+      .maybeSingle();
+    return {
+      firstName: data?.first_name ?? '',
+      lastName: data?.last_name ?? '',
+      email: data?.email ?? '',
+      country: data?.country_code ?? fallbackCountry,
+    };
+  };
 
   const register = async (i: RegisterInput, remember: boolean): Promise<Result> => {
-    if (accounts[i.phone]) return { ok: false, error: 'exists' };
-    await saveAccounts({
-      ...accounts,
-      [i.phone]: { firstName: i.firstName, lastName: i.lastName, email: i.email, country: i.country, pin: i.pin },
+    const r = await callAuth('register', {
+      phone: i.phone, pin: i.pin, firstName: i.firstName, lastName: i.lastName, country: i.country,
     });
+    if (!r.session) return { ok: false, error: mapError(r.error) };
+    if (await openSession(r.session)) {
+      if (i.email) await getSupabase().from('profiles').update({ email: i.email }).not('id', 'is', null);
+      await getSupabase().auth.signOut({ scope: 'local' });
+    }
     persistRemember(remember ? { phone: i.phone, country: i.country } : null);
-    // Volontairement : on ne connecte pas automatiquement l'utilisateur.
-    // Il est renvoyé vers la page de connexion pour saisir à nouveau son code PIN
-    // (objectif : mémorisation du code PIN).
+    // Volontairement : pas de connexion automatique (le PIN est ressaisi sur l'écran de connexion).
     return { ok: true };
   };
 
   const login = async (p: string, pin: string, remember: boolean): Promise<Result> => {
-    const acc = accounts[p];
-    if (!acc) return { ok: false, error: 'notfound' };
-    if (acc.pin !== pin) return { ok: false, error: 'badpin' };
-    persistRemember(remember ? { phone: p, country: acc.country } : null);
+    const r = await callAuth('login', { phone: p, pin });
+    if (!r.session) return { ok: false, error: mapError(r.error) };
+    if (!(await openSession(r.session))) return { ok: false, error: 'network' };
+    const prof = await loadProfile(remembered?.country ?? '');
+    setProfile(prof);
+    persistRemember(remember ? { phone: p, country: prof.country } : null);
     setPhone(p);
+    void Promise.all([refreshWallet(), refreshBookings()]);
     return { ok: true };
   };
 
-  const resetPin = async (p: string, pin: string): Promise<Result> => {
-    const acc = accounts[p];
-    if (!acc) return { ok: false, error: 'notfound' };
-    await saveAccounts({ ...accounts, [p]: { ...acc, pin } });
-    return { ok: true };
-  };
+  // Sans vérification SMS du numéro, une réinitialisation serait une prise de compte :
+  // désactivée tant qu'un fournisseur SMS n'est pas branché (docs/BACKEND.md).
+  const resetPin = async (_phone: string, _pin: string): Promise<Result> => ({
+    ok: false,
+    error: 'resetunavailable',
+  });
 
   const setRemember = (on: boolean) => {
     if (!phone) return;
-    persistRemember(on ? { phone, country: accounts[phone]?.country ?? '' } : null);
+    persistRemember(on ? { phone, country: profile?.country ?? '' } : null);
   };
 
-  const signOut = () => setPhone(null);
+  const signOut = () => {
+    setPhone(null);
+    setProfile(null);
+    resetWallet();
+    resetBookings();
+    getSupabase().auth.signOut({ scope: 'local' }).catch(() => {});
+  };
 
-  const acc = phone ? accounts[phone] : undefined;
-  const user: User | null = phone && acc ? { phone, ...acc } : null;
+  const user: User | null = phone && profile ? { phone, ...profile } : null;
   const rememberOn = !!remembered && remembered.phone === phone;
 
   return (
     <AuthContext.Provider
-      value={{ ready, phone, user, remembered, rememberOn, setRemember, hasAccount, register, login, resetPin, signOut }}
+      value={{ ready, phone, user, remembered, rememberOn, setRemember, register, login, resetPin, signOut }}
     >
       {children}
     </AuthContext.Provider>

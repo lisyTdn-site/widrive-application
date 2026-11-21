@@ -12,12 +12,13 @@ import { BookingCalendar, slotIssue } from '@/components/BookingCalendar';
 import { PaySheet, type PayInfo } from '@/components/PaySheet';
 import { colors, font, radius, spacing } from '@/theme';
 import { useI18n, type Key } from '@/i18n';
-import { apartments, type AptRoom } from '@/data/catalog';
+import type { AptRoom } from '@/data/catalog';
+import { useApartments } from '@/lib/catalogListings';
 import { money } from '@/lib/wallet';
 import {
   activeBookings,
-  confirmBooking,
   createBooking,
+  refreshBookings,
   useBookings,
   type Booking,
 } from '@/lib/bookings';
@@ -29,6 +30,7 @@ export default function HousingDetail() {
   const { t, lang } = useI18n();
   const { id, pay } = useLocalSearchParams<{ id: string; pay?: string }>();
   const items = useBookings();
+  const { data: apartments, loading: listLoading } = useApartments();
   const apt = apartments.find((a) => a.id === id);
   const resume = pay === '1' ? items.find((b) => b.listingId === id && b.status === 'pending') : undefined;
 
@@ -39,6 +41,8 @@ export default function HousingDetail() {
   const [pending, setPending] = useState<Booking | null>(resume ?? null);
   const [payOpen, setPayOpen] = useState(!!resume);
   const [done, setDone] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
 
   const active = useMemo(() => (apt ? activeBookings(items, apt.id) : []), [items, apt]);
   const amount = apt ? apt.pricePerMonth : 0;
@@ -47,6 +51,7 @@ export default function HousingDetail() {
   const canReserve = start != null && end != null && issue === null;
 
   if (!apt) {
+    if (listLoading) return <SafeAreaView style={s.root} />;
     return (
       <SafeAreaView style={s.root}>
         <Text style={s.notFound}>{t('apt.notFound')}</Text>
@@ -57,28 +62,23 @@ export default function HousingDetail() {
   const photos = apt.photos.map((p) => p.source);
   const roomLabel = (room: AptRoom) => t(`apt.room.${room}` as Key);
 
-  const reserve = () => {
-    if (!canReserve || start == null || end == null) return;
-    const booking = createBooking({
-      kind: 'housing',
-      listingId: apt.id,
-      title: apt.title[lang],
-      start,
-      end,
-      amount,
-      deposit,
-      method: 'wallet',
-      status: 'pending',
-      paid: 0,
-    });
-    setPending(booking);
+  const reserve = async () => {
+    if (!canReserve || start == null || end == null || busy) return;
+    setBusy(true);
+    setErr(null);
+    const r = await createBooking({ listingId: apt.id, start, end });
+    setBusy(false);
+    if (!r.ok) {
+      setErr(t(r.error === 'unavailable' ? 'bk.err.unavailable' : 'bk.err.generic'));
+      if (r.error === 'unavailable') refreshBookings();
+      return;
+    }
+    setPending(r.booking);
     setCalOpen(false);
     setPayOpen(true);
   };
 
-  const onPaid = (info: PayInfo) => {
-    if (!pending) return;
-    confirmBooking(pending.id, info.amount, info.method);
+  const onPaid = (_info: PayInfo) => {
     setPending(null);
     setPayOpen(false);
     setDone(true);
@@ -286,8 +286,9 @@ export default function HousingDetail() {
           </ScrollView>
 
           <View style={s.modalFooter}>
+            {err ? <Text style={{ color: colors.danger, textAlign: 'center', marginBottom: 8 }}>{err}</Text> : null}
             <Pressable
-              disabled={!canReserve}
+              disabled={!canReserve || busy}
               onPress={reserve}
               style={({ pressed }) => [
                 s.cta,
@@ -307,6 +308,7 @@ export default function HousingDetail() {
         amount={pending ? pending.amount : amount}
         deposit={pending ? pending.deposit : deposit}
         onClose={() => setPayOpen(false)}
+        bookingId={pending?.id}
         onPaid={onPaid}
       />
 

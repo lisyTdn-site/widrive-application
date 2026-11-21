@@ -10,12 +10,13 @@ import { BookingCalendar, slotIssue } from '@/components/BookingCalendar';
 import { PaySheet, type PayInfo } from '@/components/PaySheet';
 import { colors, font, radius, spacing } from '@/theme';
 import { useI18n, type Key } from '@/i18n';
-import { rentals, DRIVER_PER_DAY } from '@/data/catalog';
+import { DRIVER_PER_DAY } from '@/data/catalog';
+import { useRentals } from '@/lib/catalogListings';
 import { money } from '@/lib/wallet';
 import {
   activeBookings,
-  confirmBooking,
   createBooking,
+  refreshBookings,
   useBookings,
   type Booking,
 } from '@/lib/bookings';
@@ -27,6 +28,7 @@ export default function RentalDetail() {
   const { t, lang } = useI18n();
   const { id, pay } = useLocalSearchParams<{ id: string; pay?: string }>();
   const items = useBookings();
+  const { data: rentals, loading: listLoading } = useRentals();
   const car = rentals.find((r) => r.id === id);
   const resume = pay === '1' ? items.find((b) => b.listingId === id && b.status === 'pending') : undefined;
 
@@ -38,6 +40,8 @@ export default function RentalDetail() {
   const [pending, setPending] = useState<Booking | null>(resume ?? null);
   const [payOpen, setPayOpen] = useState(!!resume);
   const [done, setDone] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
 
   const active = useMemo(() => (car ? activeBookings(items, car.id) : []), [items, car]);
   const days = start != null && end != null ? daysBetween(start, end) : 1;
@@ -47,6 +51,7 @@ export default function RentalDetail() {
   const canConfirm = start != null && end != null && issue === null;
 
   if (!car) {
+    if (listLoading) return <SafeAreaView style={s.root} />;
     return (
       <SafeAreaView style={s.root}>
         <Text style={s.notFound}>{t('rent.notFound')}</Text>
@@ -60,28 +65,23 @@ export default function RentalDetail() {
     setBookOpen(true);
   };
 
-  const confirm = () => {
-    if (!canConfirm || start == null || end == null) return;
-    const booking = createBooking({
-      kind: 'rental',
-      listingId: car.id,
-      title: car.name,
-      start,
-      end,
-      amount,
-      deposit,
-      method: 'wallet',
-      status: 'pending',
-      paid: 0,
-    });
-    setPending(booking);
+  const confirm = async () => {
+    if (!canConfirm || start == null || end == null || busy) return;
+    setBusy(true);
+    setErr(null);
+    const r = await createBooking({ listingId: car.id, start, end, withDriver: driver });
+    setBusy(false);
+    if (!r.ok) {
+      setErr(t(r.error === 'unavailable' ? 'bk.err.unavailable' : 'bk.err.generic'));
+      if (r.error === 'unavailable') refreshBookings();
+      return;
+    }
+    setPending(r.booking);
     setBookOpen(false);
     setPayOpen(true);
   };
 
-  const onPaid = (info: PayInfo) => {
-    if (!pending) return;
-    confirmBooking(pending.id, info.amount, info.method);
+  const onPaid = (_info: PayInfo) => {
     setPending(null);
     setPayOpen(false);
     setDone(true);
@@ -269,8 +269,9 @@ export default function RentalDetail() {
           </ScrollView>
 
           <View style={s.modalFooter}>
+            {err ? <Text style={{ color: colors.danger, textAlign: 'center', marginBottom: 8 }}>{err}</Text> : null}
             <Pressable
-              disabled={!canConfirm}
+              disabled={!canConfirm || busy}
               onPress={confirm}
               style={({ pressed }) => [s.cta, !canConfirm && s.ctaOff, pressed && canConfirm && s.pressed]}
             >
@@ -286,6 +287,7 @@ export default function RentalDetail() {
         amount={pending ? pending.amount : amount}
         deposit={pending ? pending.deposit : deposit}
         onClose={() => setPayOpen(false)}
+        bookingId={pending?.id}
         onPaid={onPaid}
       />
 

@@ -31,7 +31,7 @@ function Field({ label, style, ...rest }: TextInputProps & { label: string }) {
 
 export default function Login() {
   const params = useLocalSearchParams<{ tab?: string }>();
-  const { phone: loggedPhone, remembered, hasAccount, register, login, resetPin } = useAuth();
+  const { phone: loggedPhone, remembered, register, login, resetPin } = useAuth();
   const { t, tr } = useI18n();
 
   const startCountry = countries.find((c) => c.code === remembered?.country) ?? DEFAULT_COUNTRY;
@@ -100,17 +100,11 @@ export default function Login() {
     if (pin.length !== 4) return fail(t('err.pin'));
     if (pin !== pin2) return fail(t('err.pinMatch'));
     if (!terms) return fail(t('err.terms'));
-    if (hasAccount(full)) return fail(t('err.exists'));
     goOtp();
   };
 
-  const submitReset = () => {
-    if (phone.length !== country.phoneLength) return fail(t('err.phone', { n: country.phoneLength }));
-    if (!hasAccount(full)) return fail(t('err.notfound'));
-    if (pin.length !== 4) return fail(t('err.pin'));
-    if (pin !== pin2) return fail(t('err.pinMatch'));
-    goOtp();
-  };
+  // Réinitialisation indisponible tant que la vérification SMS n'est pas branchée (cf. AuthContext).
+  const submitReset = () => fail(t('err.resetunavailable'));
 
   const verifyOtp = async () => {
     if (code !== '123456') return fail(t('err.otp'));

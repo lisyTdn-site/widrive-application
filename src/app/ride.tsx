@@ -5,8 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { colors, font } from '@/theme';
 import { useI18n, type Key } from '@/i18n';
-
-const BALANCE = 45000; // fictif, à remplacer par l'API
+import { useWallet } from '@/lib/wallet';
 
 const categories = [
   { id: 'eco', name: 'Eco', desc: 'ride.ecoDesc', eta: '3 min', price: 2000 },
@@ -20,13 +19,14 @@ const fmt = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 
 export default function Ride() {
   const { t } = useI18n();
+  const { balance } = useWallet();
   const [from, setFrom] = useState(t('ride.current'));
   const [to, setTo] = useState('');
   const [catId, setCatId] = useState('confort');
   const [pay, setPay] = useState<Pay>('wallet');
 
   const cat = categories.find((c) => c.id === catId) ?? categories[0];
-  const insufficient = pay === 'wallet' && cat.price > BALANCE;
+  const insufficient = pay === 'wallet' && cat.price > balance;
   const canConfirm = to.trim().length > 2 && from.trim().length > 2 && !insufficient;
 
   const confirm = () => {
@@ -121,7 +121,7 @@ export default function Ride() {
 
         {insufficient ? (
           <View style={s.warn}>
-            <Text style={s.warnText}>{t('ride.insufficient', { amount: fmt(BALANCE) })}</Text>
+            <Text style={s.warnText}>{t('ride.insufficient', { amount: fmt(balance) })}</Text>
             <Pressable
               accessibilityRole="button"
               onPress={() => router.push({ pathname: '/wallet', params: { mode: 'dep' } } as never)}
@@ -132,7 +132,7 @@ export default function Ride() {
         ) : (
           <Text style={s.note}>
             {pay === 'wallet'
-              ? t('ride.noteWallet', { amount: fmt(BALANCE) })
+              ? t('ride.noteWallet', { amount: fmt(balance) })
               : t('ride.noteMomo')}
           </Text>
         )}

@@ -187,6 +187,18 @@ export default function Home() {
           )}
         </View>
 
+        {/* OFFRES */}
+        {!query.trim() && (
+          <>
+            <View style={styles.sectionHead}>
+              <Text style={styles.section}>{t('home.featured')}</Text>
+              <Text style={styles.sectionSub}>{t('home.featuredSub')}</Text>
+            </View>
+
+            <AdCarousel />
+          </>
+        )}
+
         {/* SERVICES — en priorité : visibles sans défilement */}
         <View style={styles.sectionHead}>
           <Text style={styles.section}>{t('home.services')}</Text>
@@ -231,18 +243,6 @@ export default function Home() {
             );
           })}
         </View>
-
-        {/* OFFRES */}
-        {!query.trim() && (
-          <>
-            <View style={styles.sectionHead}>
-              <Text style={styles.section}>{t('home.featured')}</Text>
-              <Text style={styles.sectionSub}>{t('home.featuredSub')}</Text>
-            </View>
-
-            <AdCarousel />
-          </>
-        )}
 
         {/* SIGNATURE */}
         <View style={styles.signature}>

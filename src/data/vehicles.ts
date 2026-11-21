@@ -28,8 +28,13 @@ export type Vehicle = {
   interior: VehicleCondition;
   ac: VehicleCondition;
   equipment: VehicleEquipment[];
-  documentKey: 'vehicle.docs.1' | 'vehicle.docs.2' | 'vehicle.docs.3';
+  documentKey: 'vehicle.docs.1' | 'vehicle.docs.2' | 'vehicle.docs.3' | 'vehicle.docs.4';
   image: ImageSourcePropType;
+  /** Galerie complète (si absente : `image` seule). */
+  photos?: ImageSourcePropType[];
+  /** Texte de l'annonce (FR/EN), affiché dans la fiche. */
+  description?: { fr: string; en: string };
+  negotiable?: boolean;
 };
 
 export const vehicles: Vehicle[] = [

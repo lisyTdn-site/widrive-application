@@ -7,7 +7,7 @@ import { Chips } from '@/components/Chips';
 import { Img } from '@/components/Img';
 import { Spec } from '@/components/Spec';
 import { ZoneMap } from '@/components/ZoneMap';
-import { apartments } from '@/data/catalog';
+import { useApartments } from '@/lib/catalogListings';
 import { CALAVI } from '@/data/zones';
 import { money } from '@/lib/wallet';
 import { useI18n, type Key } from '@/i18n';
@@ -19,6 +19,7 @@ type TypeF = (typeof TYPES)[number];
 export default function Appartements() {
   const { t, tr } = useI18n();
   const [type, setType] = useState<TypeF>('all');
+  const { data: apartments } = useApartments();
   const list = apartments.filter((a) => type === 'all' || a.type === type);
   const typeLabel = (x: TypeF) => (x === 'all' ? t('common.all') : t(`apt.type.${x}` as Key));
 

@@ -57,3 +57,23 @@ export function uid(prefix: string): string {
   seq += 1;
   return `${prefix}_${Date.now().toString(36)}_${seq}`;
 }
+
+/** Store observable NON persisté : reflète des données serveur (rechargées à la connexion). */
+export function createLiveStore<T>(initial: T): Store<T> {
+  let value = initial;
+  const listeners = new Set<() => void>();
+  return {
+    get: () => value,
+    set: (updater) => {
+      value = typeof updater === 'function' ? (updater as (prev: T) => T)(value) : updater;
+      listeners.forEach((l) => l());
+    },
+    subscribe: (l) => {
+      listeners.add(l);
+      return () => {
+        listeners.delete(l);
+      };
+    },
+    hydrated: () => true,
+  };
+}

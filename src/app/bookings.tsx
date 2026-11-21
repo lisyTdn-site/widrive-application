@@ -5,8 +5,8 @@ import { router } from 'expo-router';
 import { Screen } from '@/components/Screen';
 import { colors, font, radius, spacing } from '@/theme';
 import { useI18n, type Key } from '@/i18n';
-import { cancelBooking, useBookings, type Booking, type BookingStatus } from '@/lib/bookings';
-import { money, refundWallet } from '@/lib/wallet';
+import { cancelBooking, useMyBookings, type Booking, type BookingStatus } from '@/lib/bookings';
+import { money, refreshWallet } from '@/lib/wallet';
 import { dateTimeLabel } from '@/lib/dates';
 
 const statusColor = (status: BookingStatus) =>
@@ -17,7 +17,7 @@ const statusTint = (status: BookingStatus) =>
 
 export default function Bookings() {
   const { t, lang } = useI18n();
-  const items = useBookings();
+  const items = useMyBookings();
   const [ask, setAsk] = useState<Booking | null>(null);
   const [done, setDone] = useState<string | null>(null);
 
@@ -28,12 +28,14 @@ export default function Bookings() {
       (b.kind === 'rental' ? `/rental/${b.listingId}?pay=1` : `/housing/${b.listingId}?pay=1`) as never
     );
 
-  const confirmCancel = () => {
+  const confirmCancel = async () => {
     if (!ask) return;
-    if (ask.paid > 0) refundWallet(ask.paid, t('pay.refundLabel', { title: ask.title }));
-    cancelBooking(ask.id);
-    setDone(ask.id);
+    const target = ask;
     setAsk(null);
+    if (await cancelBooking(target.id)) {
+      await refreshWallet();
+      setDone(target.id);
+    }
   };
 
   return (
